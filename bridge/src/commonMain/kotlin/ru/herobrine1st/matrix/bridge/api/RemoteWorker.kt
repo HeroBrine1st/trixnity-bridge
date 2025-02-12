@@ -1,0 +1,130 @@
+package ru.herobrine1st.matrix.bridge.api
+
+import kotlinx.coroutines.flow.Flow
+import net.folivo.trixnity.core.model.events.ClientEvent
+import ru.herobrine1st.matrix.bridge.api.value.RemoteActorId
+import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
+import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
+import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
+
+/**
+ * An interface to remote side.
+ */
+// This violates single responsibility principle (this is the actor repository, the worker itself and interface to room/user data)
+// can probably do nothing with that, IDK
+public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId> {
+    /**
+     * This method is called when an event on matrix side is fired and delivered to application service.
+     *
+     * This method could be called multiple times with the same [event] in case of network or other failures.
+     * Implementation of this method SHOULD be idempotent. [RoomEvent.eventId] can be used for that.
+     *
+     * Implementation MUST dispatch [event] immediately, suspending until it is done. A successful return means that
+     * event dispatched successfully, and in most cases it won't be used again in calls to this method.
+     *
+     * If this worker can't dispatch [event] to remote side, but it is possible later and worth retrying (e.g. network I/O error
+     * occurred or token expired), a relevant exception MUST be thrown.
+     *
+     * If [event] cannot be dispatched to remote side (e.g. event is not supported or an application-level error occurred),
+     * implementation MUST throw [ru.herobrine1st.matrix.bridge.exception.UnhandledEventException].
+     *
+     * @param actorId id of actor is recommended to use for dispatching event to remote side
+     * @param roomId ID of corresponding room on remote side
+     * @param event A matrix event
+     * @throws Throwable in case of any error
+     * @throws ru.herobrine1st.matrix.bridge.exception.EventHandlingException in case of edge case errors
+     */
+    // TODO add exceptions for "permission denied" and other, because state events can be invalid and so should be deleted right away
+    //      Another exceptions:
+    //      - UnsupportedEventException (and change doc above), so that we can respond back with error
+    public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
+        actorId: ACTOR,
+        roomId: ROOM,
+        event: ClientEvent.RoomEvent<*>
+    )
+
+    /**
+     * This method provides bridge with the information about currently available workers.
+     *
+     * If new actor is emerged, it will be automatically subscribed to via [getEvents]
+     * If actor is removed, subscription will be automatically terminated. RemoteWorker SHOULD NOT try to complete it itself,
+     * but it is possible to return FatalFailure in case of authentication revocation or other internal bridge failures due to
+     * account removal.
+     *
+     * @return Flow of currently available remote actor ids
+     */
+    // TODO move to repository
+    public fun getActorsFlow(): Flow<List<ACTOR>>
+
+    /**
+     * This method provides a subscription to remote side events.
+     *
+     * There's no constraints on implementation of this method, be it long-polling, web sockets, periodic polling etc.
+     * It is up to implementation how to get events and convert them to [WorkerEvent].
+     *
+     * Implementations SHOULD NOT throw any exceptions outside of [Flow]. A fitting
+     * place for exceptions at this stage is initialization of an implementation.
+     *
+     * Implementations SHOULD pass exceptions down this flow in case of network or other failures. Implementations MUST
+     * be able to recover after that in subsequent [Flow]s obtained by repeated call to this method, except on [WorkerEvent.FatalFailure].
+     *
+     * @param actorId ID of remote actor to get events from
+     * @return Flow of events on remote side
+     */
+    public fun getEvents(actorId: ACTOR): Flow<WorkerEvent<USER, ROOM, MESSAGE>>
+
+    /**
+     * Fetch remote user
+     *
+     * Implementation SHOULD return a fresh instance of user data, e.g. it is verified by remote server
+     * (e.g. Cache-Control header) or fetched fully from it. If implementation does know about changes immediately and
+     * no query is required, it may be useful to use [UserDataHolder.userData] field in supported events.
+     *
+     * This method is called in response to [RoomEvent.RoomMember] event with [RoomEvent.RoomMember.userData]
+     * field set to null (the default).
+     *
+     * @param actorId [RemoteActorId] that is recommended to use while fetching remote user
+     * @param id User to fetch
+     * @return Fresh [RemoteUser] data instance
+     */
+    public suspend fun getUser(actorId: ACTOR, id: USER): RemoteUser<USER>
+
+    /**
+     * Fetch remote room
+     *
+     * Implementation MUST make sure the returned instance is fresh, i.e. in most cases it is either verified by remote server
+     * (e.g. Cache-Control header) or fetched fully from it. If implementation does know about changes immediately and
+     * no query is required, it may be useful to use [RoomDataHolder.roomData] field in supported events.
+     *
+     * This method is called in response to [RoomEvent.RoomCreation] event with [RoomEvent.RoomCreation.roomData]
+     * field set to null (the default).
+     *
+     * @param actorId [RemoteActorId] that is recommended to use while fetching remote room
+     * @param id Room to fetch
+     * @return Fresh [RemoteRoom] data instance
+     */
+    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom
+
+    /**
+     * This method provides a [Flow] of remote users in remote room, denoted by [remoteId].
+     *
+     * Resulting flow MUST NOT contain actor account as defined by
+     * [ru.herobrine1st.matrix.bridge.database.ActorRepository.getMxUserOfActorPuppet].
+     *
+     * [Flow] gives ability to use pagination, but it is up to implementation how to fetch users from remote room. This method
+     * can return remote user data in [RemoteUser] class to avoid additional [getUser] request or set it to null,
+     * at [RemoteWorker] discretion. In the latter case, if puppet is not created yet, [getUser] is called to get user data.
+     * Generally this method should not return user data, but if it is cheap to get user data in bulk,
+     * it is an efficient optimisation to return this data here. The returned data SHOULD be fresh as defined by [getUser].
+     * [RemoteUser.remoteId] MUST be the same as first value of a pair.
+     *
+     * Implementation SHOULD NOT throw any exceptions outside of [Flow]. Implementation SHOULD pass exceptions down
+     * this flow in case of network or other failures.
+     *
+     * @param actorId id of actor that is recommended to use while fetching remote room members
+     * @param remoteId An id denoting requested room
+     * @return Flow of users in room. Each pair has two values: id of user and its data.
+     */
+    public fun getRoomMembers(actorId: ACTOR, remoteId: ROOM): Flow<Pair<USER, RemoteUser<USER>?>>
+
+}

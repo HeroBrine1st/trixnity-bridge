@@ -1,0 +1,14 @@
+[versions]
+trixnity = "4.11.2"
+kotlin = "2.0.21"
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[libraries]
+trixnity-applicationservice = { module = "net.folivo:trixnity-applicationservice", version.ref = "trixnity" }
+trixnity-api-client = { module = "net.folivo:trixnity-api-client", version.ref = "trixnity" }
+trixnity-clientserverapi-client = { module = "net.folivo:trixnity-clientserverapi-client", version.ref = "trixnity" }
+
+kotlinLogging = { module = "io.github.oshai:kotlin-logging", version = "7.0.3" }
