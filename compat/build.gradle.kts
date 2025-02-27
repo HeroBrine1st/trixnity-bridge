@@ -1,17 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
-}
-
-group = "ru.herobrine1st.matrix"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
-repositories {
-    mavenCentral()
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 kotlin {
@@ -28,4 +18,8 @@ kotlin {
             api(libs.trixnity.clientserverapi.client)
         }
     }
+}
+
+mavenPublishing {
+    coordinates("ru.herobrine1st.matrix.bridge", "compat", "1.0-SNAPSHOT")
 }
