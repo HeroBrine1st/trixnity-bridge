@@ -1,5 +1,5 @@
 [versions]
-trixnity = "4.13.0"
+trixnity = "4.11.2"
 kotlin = "2.1.10"
 
 [plugins]
