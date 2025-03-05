@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.org.bouncycastle.cms.RecipientId.password
-
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.vanniktech.mavenPublish)
@@ -24,15 +22,6 @@ kotlin {
     }
 }
 
-//publishing.repositories {
-//    maven {
-//        name = "forgejo"
-//        url = uri("https://git.herobrine1st.ru/api/packages/HeroBrine1st/maven")
-//
-//        credentials(PasswordCredentials::class)
-//    }
-//}
-
 mavenPublishing {
-    coordinates("ru.herobrine1st.matrix.bridge", "bridge", "1.0-SNAPSHOT")
+    coordinates(project.group.toString(), project.name.toString(), project.version.toString())
 }

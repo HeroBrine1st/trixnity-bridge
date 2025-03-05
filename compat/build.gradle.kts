@@ -21,5 +21,5 @@ kotlin {
 }
 
 mavenPublishing {
-    coordinates("ru.herobrine1st.matrix.bridge", "compat", "1.0-SNAPSHOT")
+    coordinates(project.group.toString(), project.name.toString(), project.version.toString())
 }
