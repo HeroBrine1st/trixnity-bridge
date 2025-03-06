@@ -123,7 +123,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
                         }
                     }
                 } catch (t: Throwable) {
-                    errorNotifier.notify("An error occurred while handling event $event", t)
+                    errorNotifier.notify("An error occurred while handling event $event", t, true)
                     throw t
                 }
             }
@@ -206,7 +206,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
                         if (attempt == 0L) {
                             emit(WorkerEvent.Disconnected(cause.toString()))
                         }
-                        errorNotifier.notify("An error occurred in RemoteWorker", cause)
+                        errorNotifier.notify("An error occurred in RemoteWorker", cause, true)
                         logger.error(cause) { "An error occurred in RemoteWorker" }
                         val delay =
                             DELAY_ON_ERROR_SECONDS.seconds * DELAY_EXPONENTIAL_BACKOFF_COEFFICIENT.pow(attempt.toInt())
@@ -216,7 +216,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
                     }
                     .onEach {
                         if (it is WorkerEvent.FatalFailure) {
-                            errorNotifier.notify("Got $it from $actorId", null)
+                            errorNotifier.notify("Got $it from $actorId", null, false)
                             logger.error { "An irrecoverable error occurred in RemoteWorker: $it" }
                             logger.error { "Stopping subscription now" }
                             terminated += actorId
@@ -230,7 +230,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
                         if (cause is RemoteWorkerFatalFailureException) {
                             false
                         } else {
-                            errorNotifier.notify("Got internal error on $actorId", cause)
+                            errorNotifier.notify("Got internal error on $actorId", cause, true)
                             val delay =
                                 DELAY_ON_ERROR_SECONDS.seconds * DELAY_EXPONENTIAL_BACKOFF_COEFFICIENT.pow(attempt.toInt())
                             logger.error(cause) { "Got internal error on $actorId, retrying after $delay" }
@@ -420,7 +420,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
             // it is vital to invite correspondingLocalUser here as isDirect works only here
             invite = setOfNotNull(correspondingLocalUser, invitePuppet),
             initialState = listOf(
-                // this "direct" room can have up to 4 members (actual user, actual puppet, sender for "sent successfully" via read marks and puppet of actual user for synchronisaton cases)
+                // this "direct" room can have up to 4 members (actual user, actual puppet, sender for "sent successfully" via read marks and puppet of actual user for synchronisation cases)
                 InitialStateEvent(
                     content = serviceMembersEvent,
                     stateKey = ""
