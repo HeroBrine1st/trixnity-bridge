@@ -1,21 +1,39 @@
 package ru.herobrine1st.matrix.bridge.database
 
 import net.folivo.trixnity.core.model.UserId
+import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.value.RemoteActorId
+import ru.herobrine1st.matrix.bridge.api.RemoteWorker
+import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 
 public interface ActorRepository<ACTOR : RemoteActorId> {
     // this is the user that "owns" that actor
     // TODO there are actors without owner (i.e. it is a double-puppeted actor), returning null is the same as "not found"?
     //      provide an exception
+    /**
+     * This method returns [UserId] of a real user if actor is a personal account. This applies only to personal bridges.
+     *
+     * @return A real user of actor if it is a personal actor, otherwise null.
+     * @throws NoSuchActorException if actor is not found
+     */
     public suspend fun getLocalUserIdForActor(remoteActorId: ACTOR): UserId?
 
-    // userId is the user that owns the actor
-    public suspend fun getActorIdByLocalUserId(userId: UserId): ACTOR?
+    /**
+     * This method returns actor that can handle [event].
+     *
+     * For personal bridges it is recommended to use [ClientEvent.RoomEvent.sender] with backing storage saving "ownership" of users to actors.
+     * For general bridges [ClientEvent.RoomEvent.roomId] can be used with backing storage saving "ownership" of rooms to actors.
+     * More sophisticated algorithms can be used, however, those two cases are extremely common.
+     *
+     * @return Actor ID that will be passed to [RemoteWorker] as recommended actor to use, or null if event is not to be processed.
+     * @see [RemoteWorker.handleEvent]
+     */
+    public suspend fun getActorIdByEvent(event: ClientEvent.RoomEvent<*>): ACTOR?
 
     /**
      * This method returns a puppet of actor account on remote side if it is created.
      *
-     * Actor account is the remote account that [ru.herobrine1st.matrix.bridge.api.RemoteWorker] uses to act on remote network.
+     * Actor account is the remote account that [RemoteWorker] uses to act on remote network.
      *
      * This bridge has ability to replicate events emitted from actor but bypassed the bridge
      * (e.g. when you manually go to remote network and send messages from account connected to bridge).

@@ -29,6 +29,7 @@ import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.database.*
 import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
+import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 import ru.herobrine1st.matrix.bridge.exception.UnhandledEventException
 import ru.herobrine1st.matrix.bridge.internal.EventHandlerScopeImpl
 import ru.herobrine1st.matrix.bridge.internal.RemoteWorkerFatalFailureException
@@ -48,7 +49,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
     private val roomRepository: RoomRepository<ROOM>,
     private val puppetRepository: PuppetRepository<USER>,
     private val messageRepository: MessageRepository<USER, MESSAGE>,
-    private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _ -> },
+    private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
     bridgeConfig: BridgeConfig,
 ) : ApplicationServiceApiServerHandler {
 
@@ -89,38 +90,14 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
             if (blacklist.any { it.matches(event.sender.full) }) return@forEach
             if (whitelist.isNotEmpty() && whitelist.none { it.matches(event.sender.full) }) return@forEach
 
-            val remoteRoomId = roomRepository.getRemoteRoom(event.roomId)
-
-            if (remoteRoomId == null) {
+            val remoteRoomId = roomRepository.getRemoteRoom(event.roomId) ?: run {
                 // TODO handle it here, it is either a command to bridge bot or new room that needs to be bridged
                 logger.warn { "Got event from unbridged room: $event" }
                 // probably it is event to our $appServiceBotId
                 return@forEach
             }
-
-            val actorId = actorRepository.getActorIdByLocalUserId(event.sender) ?: run {
-                // TODO we can also propose a "generic" actors that cover entire rooms (or even spaces) with on-demand puppets on remote side
-                //      e.g. discord webhooks that can impersonate entities
-
-                logger.warn { "Got event ${event.id} from unreplicatable entity ${event.sender} in room ${event.roomId}" }
-                logger.trace { "$event" }
-
-                client.room.kickUser(
-                    event.roomId,
-                    event.sender,
-                    reason = "Unreplicatable entity",
-                    asUserId = appServiceBotId
-                )
-                    .onSuccess {
-                        logger.info { "Successfully kicked unreplicatable ${event.sender} from ${event.roomId}" }
-                    }.onFailure {
-                        logger.error(
-                            it
-                        ) { "An error occurred while kicking unreplicatable ${event.sender} from ${event.roomId}" }
-                    }
-
-                return@forEach
-            }
+            // TODO it is possible that suitable actor presence is implied by remoteRoomId being not null
+            val actorId = actorRepository.getActorIdByEvent(event) ?: return@forEach
 
             val scope = EventHandlerScopeImpl(event, messageRepository)
 
@@ -273,13 +250,16 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
 
     }
 
-    private suspend fun handleWorkerEvent(actorId: ACTOR, event: WorkerEvent<USER, ROOM, MESSAGE>) {
+    private suspend fun handleWorkerEvent(actorId: ACTOR, event: WorkerEvent<USER, ROOM, MESSAGE>) = try {
         when (event) {
             WorkerEvent.Connected -> {}
             is WorkerEvent.Disconnected -> {}
             is WorkerEvent.FatalFailure -> {}
             is WorkerEvent.RemoteEvent -> handleRemoteEvent(actorId, event)
         }
+    } catch (e: NoSuchActorException) {
+        logger.warn(e) { "Actor $actorId is not registered but returned an event. Ignoring." }
+        errorNotifier.notify("Actor $actorId is not registered but returned an event. Ignoring.", e, false)
     }
 
     private suspend fun handleRemoteEvent(actorId: ACTOR, remoteEvent: WorkerEvent.RemoteEvent<USER, ROOM, MESSAGE>) {
