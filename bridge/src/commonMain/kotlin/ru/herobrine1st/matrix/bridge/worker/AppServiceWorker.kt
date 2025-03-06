@@ -426,6 +426,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
                     stateKey = ""
                 )
             ),
+            // TODO do something with non-personal bridge creating rooms without ability to enter them (bot commands can be used)
             preset = CreateRoom.Request.Preset.PRIVATE,
             isDirect = remoteRoom.isDirect
         ).recover {
