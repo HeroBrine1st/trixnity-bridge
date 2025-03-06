@@ -6,4 +6,6 @@
   only personal actors are susceptible to that.
 * Actor account puppet - A puppet that represents events bypassed bridge. It is a "byproduct" puppet that is normally
   created if outbound events aren't ignored but with careful filtering it can be used to replicate bypassed events.
-* Personal bridge - a bridge with support of personal actors. Such bridge allows a person to bridge its own account to matrix.
+* Personal bridge - a bridge with support of personal actors. Such bridge allows a person to bridge its own account to
+  matrix. Also known as single-puppeted
+  bridge [according to old matrix doc](https://matrix.org/docs/older/types-of-bridging/)
