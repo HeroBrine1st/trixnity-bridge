@@ -1,16 +1,14 @@
 package ru.herobrine1st.matrix.bridge.database
 
 import net.folivo.trixnity.core.model.EventId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
 /**
- * This interface is responsible for managing pairs of [RemoteMessageId] to [EventId], for usage in message relations.
+ * This interface is responsible for managing pairs of [MESSAGE] to [EventId], for usage in message relations.
  *
  * Repository MUST ensure one-to-one relation between messages and MUST throw exceptions if it is violated.
  */
 // TODO this abstraction is dependent on specific implementation and should be reconsidered
-public interface MessageRepository<USER : RemoteUserId, MESSAGE : RemoteMessageId> {
+public interface MessageRepository<USER : Any, MESSAGE : Any> {
     /**
      * This method registers pair [remoteMessageId]<->[mxEventId] as sent by [sender].
      *

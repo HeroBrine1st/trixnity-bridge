@@ -1,9 +1,8 @@
 package ru.herobrine1st.matrix.bridge.api
 
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
 
-public interface EventHandlerScope<MESSAGE : RemoteMessageId> {
+public interface EventHandlerScope<MESSAGE> {
     /**
      * Adds [id]<->[ClientEvent.RoomEvent.id] mapping to internal database
      *

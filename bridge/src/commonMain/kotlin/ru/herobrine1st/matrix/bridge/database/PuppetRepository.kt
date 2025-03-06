@@ -1,9 +1,8 @@
 package ru.herobrine1st.matrix.bridge.database
 
 import net.folivo.trixnity.core.model.UserId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
-public interface PuppetRepository<USER : RemoteUserId> {
+public interface PuppetRepository<USER : Any> {
 
     /**
      * This method returns id of puppet stored using [createPuppet].

@@ -2,11 +2,10 @@ package ru.herobrine1st.matrix.bridge.database
 
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.value.RemoteActorId
 import ru.herobrine1st.matrix.bridge.api.RemoteWorker
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 
-public interface ActorRepository<ACTOR : RemoteActorId> {
+public interface ActorRepository<ACTOR : Any> {
     // this is the user that "owns" that actor
     // TODO there are actors without owner (i.e. it is a double-puppeted actor), returning null is the same as "not found"?
     //      provide an exception

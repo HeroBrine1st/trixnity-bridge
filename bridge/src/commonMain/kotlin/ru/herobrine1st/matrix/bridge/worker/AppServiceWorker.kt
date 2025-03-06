@@ -22,10 +22,6 @@ import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
 import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
 import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
 import ru.herobrine1st.matrix.bridge.api.*
-import ru.herobrine1st.matrix.bridge.api.value.RemoteActorId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.database.*
 import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
@@ -40,7 +36,7 @@ import kotlin.time.Duration.Companion.seconds
 private const val DELAY_ON_ERROR_SECONDS = 1
 private const val DELAY_EXPONENTIAL_BACKOFF_COEFFICIENT = 2.0
 
-public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId>(
+public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     applicationJob: Job,
     private val client: MatrixClientServerApiClient,
     private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
@@ -50,6 +46,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
     private val puppetRepository: PuppetRepository<USER>,
     private val messageRepository: MessageRepository<USER, MESSAGE>,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
+    idMapperBuilder: RemoteIdToMatrixMapper.Builder<ROOM, USER>,
     bridgeConfig: BridgeConfig,
 ) : ApplicationServiceApiServerHandler {
 
@@ -59,6 +56,8 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
     private val homeserverDomain by bridgeConfig::homeserverDomain
     private val whitelist by bridgeConfig.provisioning::whitelist
     private val blacklist by bridgeConfig.provisioning::blacklist
+
+    private val idMapper = idMapperBuilder.create(roomAliasPrefix, puppetPrefix, homeserverDomain)
 
     // FIXME apparently applicationJob is SupervisorJob
     // errors render bridge non-functional but do not kill process
@@ -315,7 +314,8 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
             return@replicateRemoteUser it
         }
 
-        val username = "$puppetPrefix${userIdToReplicate.toUsernamePart()}"
+
+        val username = idMapper.buildPuppetUserId(userIdToReplicate).localpart
 
         val puppetId = client.authentication.register(
             username = username,
@@ -405,8 +405,7 @@ public class AppServiceWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
         // this list is already available here without database due to full idempotency)
         // also listing invites/joined rooms of appServiceBot and excluding already stored rooms from resulting list is useful
 
-        val alias =
-            RoomAliasId(localpart = "${roomAliasPrefix}${roomIdToReplicate.toAliasPart()}", domain = homeserverDomain)
+        val alias = idMapper.buildRoomAlias(roomIdToReplicate)
         val serviceMembersEvent = ServiceMembersEventContent(
             serviceMembers = listOfNotNull(
                 appServiceBotId,

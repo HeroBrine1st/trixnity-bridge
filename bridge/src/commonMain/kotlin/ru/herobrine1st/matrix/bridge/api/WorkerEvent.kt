@@ -1,11 +1,7 @@
 package ru.herobrine1st.matrix.bridge.api
 
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
-
-public sealed interface WorkerEvent<out USER : RemoteUserId, out ROOM : RemoteRoomId, out MESSAGE : RemoteMessageId> {
+public sealed interface WorkerEvent<out USER : Any, out ROOM : Any, out MESSAGE : Any> {
     /**
      * RemoteWorker successfully connected to remote side.
      */
@@ -32,7 +28,7 @@ public sealed interface WorkerEvent<out USER : RemoteUserId, out ROOM : RemoteRo
     /**
      * An event on remote side
      */
-    public data class RemoteEvent<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId>(
+    public data class RemoteEvent<USER : Any, ROOM : Any, MESSAGE : Any>(
         val event: RoomEvent<USER, ROOM, MESSAGE>
     ) : WorkerEvent<USER, ROOM, MESSAGE>
 }

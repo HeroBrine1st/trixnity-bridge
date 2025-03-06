@@ -3,11 +3,8 @@ package ru.herobrine1st.matrix.bridge.api
 import net.folivo.trixnity.core.model.EventId
 import net.folivo.trixnity.core.model.UserId
 import ru.herobrine1st.matrix.bridge.api.RoomEvent.MessageEvent
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
-public interface RemoteWorkerAPI<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId> {
+public interface RemoteWorkerAPI<USER, ROOM, MESSAGE> {
     /**
      * Provides a way to get internal mapping of event IDs.
      *
@@ -20,7 +17,7 @@ public interface RemoteWorkerAPI<USER : RemoteUserId, ROOM : RemoteRoomId, MESSA
      * Provides a way to get internal mapping of event IDs.
      *
      * @param id The matrix event ID
-     * @return [RemoteMessageId] of the same message on local side, or null if there's no record
+     * @return message id of the same message on local side, or null if there's no record
      */
     public suspend fun getMessageEventId(id: EventId): MESSAGE?
 
@@ -30,7 +27,7 @@ public interface RemoteWorkerAPI<USER : RemoteUserId, ROOM : RemoteRoomId, MESSA
      * This method MUST return null if message author is not a puppet.
      *
      * @param id The same value as was previously used in [MessageEvent.messageId]
-     * @return [ru.herobrine1st.matrix.bridge.api.value.RemoteUserId] of author of this message, or null
+     * @return [USER] of author of this message, or null
      */
     public suspend fun getMessageAuthor(id: MESSAGE): USER?
 

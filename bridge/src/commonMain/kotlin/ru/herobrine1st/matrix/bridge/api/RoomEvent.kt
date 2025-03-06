@@ -3,11 +3,8 @@ package ru.herobrine1st.matrix.bridge.api
 import net.folivo.trixnity.core.model.events.MessageEventContent
 import net.folivo.trixnity.core.model.events.m.room.Membership
 import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
-public sealed interface RoomEvent<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId> {
+public sealed interface RoomEvent<USER : Any, ROOM : Any, MESSAGE : Any> {
     /**
      * An id of remote room this event belongs to
      */
@@ -18,7 +15,7 @@ public sealed interface RoomEvent<USER : RemoteUserId, ROOM : RemoteRoomId, MESS
      */
     public val eventId: RemoteEventId
 
-    public data class MessageEvent<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId>(
+    public data class MessageEvent<USER : Any, ROOM : Any, MESSAGE : Any>(
         override val roomId: ROOM,
         override val eventId: RemoteEventId,
         val sender: USER,
@@ -33,13 +30,13 @@ public sealed interface RoomEvent<USER : RemoteUserId, ROOM : RemoteRoomId, MESS
         val messageId: MESSAGE? = null,
     ) : RoomEvent<USER, ROOM, MESSAGE>
 
-    public data class RoomCreation<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId>(
+    public data class RoomCreation<USER : Any, ROOM : Any, MESSAGE : Any>(
         override val roomId: ROOM,
         override val eventId: RemoteEventId,
-        override val roomData: RemoteRoom? = null
-    ) : RoomEvent<USER, ROOM, MESSAGE>, RoomDataHolder
+        override val roomData: RemoteRoom<ROOM>? = null
+    ) : RoomEvent<USER, ROOM, MESSAGE>, RoomDataHolder<ROOM>
 
-    public data class RoomMember<USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId>(
+    public data class RoomMember<USER : Any, ROOM : Any, MESSAGE : Any>(
         override val roomId: ROOM,
         override val eventId: RemoteEventId,
         val userId: USER,

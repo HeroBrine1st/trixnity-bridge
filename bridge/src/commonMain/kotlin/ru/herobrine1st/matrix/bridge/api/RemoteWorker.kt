@@ -2,17 +2,13 @@ package ru.herobrine1st.matrix.bridge.api
 
 import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.value.RemoteActorId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteMessageId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteRoomId
-import ru.herobrine1st.matrix.bridge.api.value.RemoteUserId
 
 /**
  * An interface to remote side.
  */
 // This violates single responsibility principle (this is the actor repository, the worker itself and interface to room/user data)
 // can probably do nothing with that, IDK
-public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId> {
+public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
     /**
      * This method is called when an event on matrix side is fired and delivered to application service.
      *
@@ -83,7 +79,7 @@ public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
      * This method is called in response to [RoomEvent.RoomMember] event with [RoomEvent.RoomMember.userData]
      * field set to null (the default).
      *
-     * @param actorId [RemoteActorId] that is recommended to use while fetching remote user
+     * @param actorId actor that is recommended to use while fetching remote user
      * @param id User to fetch
      * @return Fresh [RemoteUser] data instance
      */
@@ -99,11 +95,11 @@ public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
      * This method is called in response to [RoomEvent.RoomCreation] event with [RoomEvent.RoomCreation.roomData]
      * field set to null (the default).
      *
-     * @param actorId [RemoteActorId] that is recommended to use while fetching remote room
+     * @param actorId actor that is recommended to use while fetching remote room
      * @param id Room to fetch
      * @return Fresh [RemoteRoom] data instance
      */
-    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom
+    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<ROOM>
 
     /**
      * This method provides a [Flow] of remote users in remote room, denoted by [remoteId].
