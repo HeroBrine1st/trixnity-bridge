@@ -6,11 +6,10 @@ import ru.herobrine1st.matrix.bridge.api.RemoteWorker
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 
 public interface ActorRepository<ACTOR : Any> {
-    // this is the user that "owns" that actor
-    // TODO there are actors without owner (i.e. it is a double-puppeted actor), returning null is the same as "not found"?
-    //      provide an exception
     /**
      * This method returns [UserId] of a real user if actor is a personal account. This applies only to personal bridges.
+     *
+     * The returned value can be thought of as "owner" of an [ACTOR].
      *
      * @return A real user of actor if it is a personal actor, otherwise null.
      * @throws NoSuchActorException if actor is not found
@@ -22,7 +21,7 @@ public interface ActorRepository<ACTOR : Any> {
      *
      * For personal bridges it is recommended to use [ClientEvent.RoomEvent.sender] with backing storage saving "ownership" of users to actors.
      * For general bridges [ClientEvent.RoomEvent.roomId] can be used with backing storage saving "ownership" of rooms to actors.
-     * More sophisticated algorithms can be used, however, those two cases are extremely common.
+     * More sophisticated algorithms can be used, however, those two are extremely common.
      *
      * @return Actor ID that will be passed to [RemoteWorker] as recommended actor to use, or null if event is not to be processed.
      * @see [RemoteWorker.handleEvent]
