@@ -7,15 +7,13 @@ import net.folivo.trixnity.core.model.EventId
  *
  * Repository MUST ensure one-to-one relation between messages and MUST throw exceptions if it is violated.
  */
-// TODO this abstraction is dependent on specific implementation and should be reconsidered
 public interface MessageRepository<USER : Any, MESSAGE : Any> {
     /**
      * This method registers pair [remoteMessageId]<->[mxEventId] as sent by [sender].
      *
      * This method MUST be idempotent.
      */
-    // TODO sender can be fetched from homeserver to reduce state hoarding
-    public suspend fun createByRemoteAuthor(remoteMessageId: MESSAGE, mxEventId: EventId, sender: USER)
+    public suspend fun createByRemoteAuthor(remoteMessageId: MESSAGE, mxEventId: EventId)
 
     /**
      * This method registers pair [remoteMessageId]<->[mxEventId] as sent by real user on mx side (i.e. null).

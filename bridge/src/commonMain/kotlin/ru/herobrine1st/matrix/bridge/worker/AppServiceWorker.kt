@@ -296,7 +296,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 }.getOrThrow()
 
                 if (event.messageId != null) {
-                    messageRepository.createByRemoteAuthor(event.messageId, eventId, event.sender)
+                    messageRepository.createByRemoteAuthor(event.messageId, eventId)
                 }
             }
 
