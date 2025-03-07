@@ -42,9 +42,9 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
     private val actorRepository: ActorRepository<ACTOR>,
     private val transactionRepository: TransactionRepository,
-    private val roomRepository: RoomRepository<ROOM>,
+    private val roomRepository: RoomRepository<ACTOR, ROOM>,
     private val puppetRepository: PuppetRepository<USER>,
-    private val messageRepository: MessageRepository<USER, MESSAGE>,
+    private val messageRepository: MessageRepository<MESSAGE>,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
     idMapperBuilder: RemoteIdToMatrixMapper.Builder<ROOM, USER>,
     bridgeConfig: BridgeConfig,
@@ -296,7 +296,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 }.getOrThrow()
 
                 if (event.messageId != null) {
-                    messageRepository.createByRemoteAuthor(event.messageId, eventId)
+                    messageRepository.createRelation(event.messageId, eventId)
                 }
             }
 
@@ -478,8 +478,8 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 .buffer() // separate coroutines
                 .collect { it.await() }
         }
-
         roomRepository.create(
+            actorId = actorId,
             mxId = roomId,
             remoteId = roomIdToReplicate,
             isDirect = remoteRoom.isDirect
@@ -534,7 +534,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     }
 
     // migration code, either to be deleted or properly extracted
-    public suspend fun migrateRoom(roomId: RoomId, remoteRoomId: ROOM, isDirect: Boolean) {
+    public suspend fun migrateRoom(actorId: ACTOR, roomId: RoomId, remoteRoomId: ROOM, isDirect: Boolean) {
         if (roomRepository.getRemoteRoom(roomId) != null) {
             logger.info { "Room $roomId is already fully migrated" }
             return
@@ -613,7 +613,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
 
         run {
             logger.debug { "Phase 4: Storing in database" }
-            roomRepository.create(roomId, remoteRoomId, isDirect)
+            roomRepository.create(actorId, roomId, remoteRoomId, isDirect)
         }
     }
 
