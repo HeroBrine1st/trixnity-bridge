@@ -1,7 +1,11 @@
 This is a generic repository implementation for double-puppeted (non-personal) bridges.
 It uses `kotlinx.serialization` to convert generic IDs to String and back.
 
-Currently, this implementation doesn't support adding actors programmatically. Also, untested.
+Currently, this implementation is limited:
+
+- No support for programmatic actor provision
+- Violates idempotency contract
+- Untested
 
 # Usage
 
