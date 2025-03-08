@@ -42,7 +42,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
     repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
-    idMapperBuilder: RemoteIdToMatrixMapper.Builder<ROOM, USER>,
+    idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
     bridgeConfig: BridgeConfig,
 ) : ApplicationServiceApiServerHandler {
 
@@ -59,7 +59,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val whitelist = bridgeConfig.provisioning.whitelist
     private val blacklist = bridgeConfig.provisioning.blacklist
 
-    private val idMapper = idMapperBuilder.create(roomAliasPrefix, puppetPrefix, homeserverDomain)
+    private val idMapper = idMapperFactory.create(roomAliasPrefix, puppetPrefix, homeserverDomain)
 
     // FIXME apparently applicationJob is SupervisorJob
     // errors render bridge non-functional but do not kill process

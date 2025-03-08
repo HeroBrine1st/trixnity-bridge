@@ -11,7 +11,7 @@ public interface RemoteIdToMatrixMapper<ROOM : Any, USER : Any> {
 
     public fun buildPuppetUserId(remoteUserId: USER): UserId
 
-    public fun interface Builder<ROOM : Any, USER : Any> {
+    public fun interface Factory<ROOM : Any, USER : Any> {
         public fun create(
             roomAliasPrefix: String,
             puppetPrefix: String,
