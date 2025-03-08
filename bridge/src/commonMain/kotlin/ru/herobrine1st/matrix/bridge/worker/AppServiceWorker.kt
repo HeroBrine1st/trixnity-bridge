@@ -42,9 +42,9 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val client: MatrixClientServerApiClient,
     remoteWorkerFactory: RemoteWorkerFactory<ACTOR, USER, ROOM, MESSAGE>,
     repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>,
-    private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
     idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
     bridgeConfig: BridgeConfig,
+    private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
 ) : ApplicationServiceApiServerHandler {
 
     private val actorRepository: ActorRepository<ACTOR> = repositorySet.actorRepository
