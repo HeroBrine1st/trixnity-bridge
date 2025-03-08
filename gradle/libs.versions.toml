@@ -1,11 +1,15 @@
 [versions]
 trixnity = "4.11.2"
 kotlin = "2.1.10"
+ktorm = "4.1.1"
+sqldelight = "2.0.2"
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 
 [libraries]
 trixnity-applicationservice = { module = "net.folivo:trixnity-applicationservice", version.ref = "trixnity" }
@@ -13,3 +17,6 @@ trixnity-api-client = { module = "net.folivo:trixnity-api-client", version.ref =
 trixnity-clientserverapi-client = { module = "net.folivo:trixnity-clientserverapi-client", version.ref = "trixnity" }
 
 kotlinLogging = { module = "io.github.oshai:kotlin-logging", version = "7.0.3" }
+
+sqldelight-extensions-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+#sqldelight-dialect-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }

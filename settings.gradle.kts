@@ -7,3 +7,4 @@ rootProject.name = "trixnity-bridge"
 
 include("bridge")
 include("compat")
+include("generic-repository-double-puppeted")

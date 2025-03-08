@@ -1,0 +1,16 @@
+import net.folivo.trixnity.core.model.UserId;
+
+CREATE TABLE Puppet (
+  userId TEXT AS UserId UNIQUE NOT NULL,
+  remoteId TEXT UNIQUE NOT NULL,
+  PRIMARY KEY (userId, remoteId)
+);
+
+create:
+INSERT INTO Puppet(userId, remoteId) VALUES (?, ?);
+
+getUserIdByRemoteId:
+SELECT userId FROM Puppet WHERE remoteId = ?;
+
+getRemoteIdByUserId:
+SELECT remoteId FROM Puppet WHERE userId = ?;

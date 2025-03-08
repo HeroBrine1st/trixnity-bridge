@@ -1,0 +1,16 @@
+import net.folivo.trixnity.core.model.EventId;
+
+CREATE TABLE Message (
+  eventId TEXT AS EventId NOT NULL UNIQUE,
+  remoteId TEXT NOT NULL UNIQUE,
+  PRIMARY KEY (eventId, remoteId)
+);
+
+createRelation:
+INSERT INTO Message(eventId, remoteId) VALUES (?, ?);
+
+getRemoteId:
+SELECT remoteId FROM Message WHERE eventId = ?;
+
+getEventId:
+SELECT eventId FROM Message WHERE remoteId = ?;

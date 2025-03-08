@@ -1,0 +1,8 @@
+CREATE TABLE Actor (
+  id INTEGER PRIMARY KEY NOT NULL, -- it's rowid, autoincrement isn't needed
+  naturalId TEXT NOT NULL -- serialised actor id
+  -- include data, like mx-puppet-bridge?
+);
+
+getAllIds:
+SELECT naturalId FROM Actor;

@@ -1,0 +1,24 @@
+import net.folivo.trixnity.core.model.EventId;
+
+CREATE TABLE HandledTransaction(
+  txnId TEXT PRIMARY KEY NOT NULL
+);
+
+CREATE TABLE HandledEventInTransaction(
+  txnId TEXT NOT NULL,
+  eventId TEXT AS EventId NOT NULL
+);
+
+isTransactionProcessed:
+SELECT EXISTS (SELECT * FROM HandledTransaction WHERE txnId = ?);
+
+onTransactionProcessed {
+  INSERT INTO HandledTransaction(txnId) VALUES (:txnId);
+  DELETE FROM HandledEventInTransaction WHERE txnId = :txnId;
+}
+
+getHandledEventsInTransaction:
+SELECT eventId FROM HandledEventInTransaction WHERE txnId = ?;
+
+onEventHandled:
+INSERT INTO HandledEventInTransaction(txnId, eventId) VALUES (?, ?);
