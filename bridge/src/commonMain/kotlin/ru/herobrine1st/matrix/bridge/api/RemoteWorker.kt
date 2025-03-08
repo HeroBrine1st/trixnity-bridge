@@ -5,9 +5,15 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 
 /**
  * An interface to remote side.
+ *
+ * This interface has four type parameters that are used throughout the bridge; each of them is an id of respective entity.
+ * This allows arbitrary types, however, those types have to be supported by repositories.
+ *
+ * @param ACTOR - exact type of actor ID
+ * @param USER - exact type of remote puppet ID
+ * @param ROOM - exact type of remote room ID
+ * @param MESSAGE - exact type of remote message ID
  */
-// This violates single responsibility principle (this is the actor repository, the worker itself and interface to room/user data)
-// can probably do nothing with that, IDK
 public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
     /**
      * This method is called when an event on matrix side is fired and delivered to application service.
@@ -18,8 +24,8 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * Implementation MUST dispatch [event] immediately, suspending until it is done. A successful return means that
      * event dispatched successfully, and in most cases it won't be used again in calls to this method.
      *
-     * If this worker can't dispatch [event] to remote side, but it is possible later and worth retrying (e.g. network I/O error
-     * occurred or token expired), a relevant exception MUST be thrown.
+     * If this worker can't dispatch [event] to remote side, but it is possible later and worth retrying (e.g. network I/O error),
+     * a relevant exception MUST be thrown.
      *
      * If [event] cannot be dispatched to remote side (e.g. event is not supported or an application-level error occurred),
      * implementation MUST throw [ru.herobrine1st.matrix.bridge.exception.UnhandledEventException].
