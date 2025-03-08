@@ -49,7 +49,7 @@ However, it is possible to show the main feature of this framework. Most of your
 interface:
 
 ```kotlin
-public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM : RemoteRoomId, MESSAGE : RemoteMessageId> {
+public interface RemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
     // a stream of events from matrix
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
