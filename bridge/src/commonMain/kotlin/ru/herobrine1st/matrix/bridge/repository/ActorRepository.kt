@@ -1,4 +1,4 @@
-package ru.herobrine1st.matrix.bridge.database
+package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent

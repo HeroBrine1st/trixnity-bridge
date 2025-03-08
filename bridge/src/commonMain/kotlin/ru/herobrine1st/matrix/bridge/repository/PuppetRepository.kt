@@ -1,11 +1,11 @@
-package ru.herobrine1st.matrix.bridge.database
+package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.UserId
 
 public interface PuppetRepository<USER : Any> {
 
     /**
-     * This method returns id of puppet stored using [createPuppet].
+     * This method returns id of puppet stored using [createPuppet], or null if not found.
      *
      * If returned user id is not a puppet, the behavior is undefined as
      * resulting ID is not controlled by bridge.

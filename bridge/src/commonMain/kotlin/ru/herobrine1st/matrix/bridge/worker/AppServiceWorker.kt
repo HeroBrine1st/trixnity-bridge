@@ -23,12 +23,12 @@ import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
 import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
 import ru.herobrine1st.matrix.bridge.api.*
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
-import ru.herobrine1st.matrix.bridge.database.*
 import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 import ru.herobrine1st.matrix.bridge.exception.UnhandledEventException
 import ru.herobrine1st.matrix.bridge.internal.EventHandlerScopeImpl
 import ru.herobrine1st.matrix.bridge.internal.RemoteWorkerFatalFailureException
+import ru.herobrine1st.matrix.bridge.repository.*
 import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
 import kotlin.math.pow
 import kotlin.time.Duration.Companion.seconds

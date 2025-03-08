@@ -1,4 +1,4 @@
-package ru.herobrine1st.matrix.bridge.database
+package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.EventId
 import ru.herobrine1st.matrix.bridge.api.RemoteWorker

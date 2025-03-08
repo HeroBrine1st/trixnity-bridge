@@ -1,4 +1,4 @@
-package ru.herobrine1st.matrix.bridge.database
+package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.RoomId
 
@@ -25,6 +25,8 @@ public interface RoomRepository<ACTOR : Any, ROOM : Any> {
      * Save pair [mxId]-[remoteId] in database as room owned by [actorId] and being direct if [isDirect] is true.
      * It is guaranteed that [remoteId] relates to [actorId] in cases when [remoteId] contains [ACTOR],
      * allowing to strip [ACTOR] from [remoteId]. Implementations SHOULD check that it is the case.
+     *
+     * [actorId] and [isDirect] can be ignored if bridge doesn't need it.
      *
      * This method MUST be idempotent.
      */

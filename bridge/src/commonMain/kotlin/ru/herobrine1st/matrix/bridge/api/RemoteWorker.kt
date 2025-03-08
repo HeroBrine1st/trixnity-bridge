@@ -105,7 +105,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * This method provides a [Flow] of remote users in remote room, denoted by [remoteId].
      *
      * Resulting flow MUST NOT contain actor account as defined by
-     * [ru.herobrine1st.matrix.bridge.database.ActorRepository.getMxUserOfActorPuppet].
+     * [ru.herobrine1st.matrix.bridge.repository.ActorRepository.getMxUserOfActorPuppet].
      *
      * [Flow] gives ability to use pagination, but it is up to implementation how to fetch users from remote room. This method
      * can return remote user data in [RemoteUser] class to avoid additional [getUser] request or set it to null,
