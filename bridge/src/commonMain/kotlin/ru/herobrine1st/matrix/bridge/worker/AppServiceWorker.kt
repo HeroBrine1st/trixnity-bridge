@@ -312,7 +312,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
         actorId: ACTOR,
         userData: RemoteUser<USER>? = null
     ): UserId {
-        puppetRepository.getMxUser(userIdToReplicate)?.let {
+        puppetRepository.getPuppetId(userIdToReplicate)?.let {
             return@replicateRemoteUser it
         }
 

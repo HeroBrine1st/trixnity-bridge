@@ -15,4 +15,20 @@ public interface MessageRepository<MESSAGE : Any> {
      * This method MUST be idempotent.
      */
     public suspend fun createRelation(remoteMessageId: MESSAGE, mxEventId: EventId)
+
+    /**
+     * Provides a way to get mapping of event IDs.
+     *
+     * @param id remote ID of message
+     * @return [EventId] of the same event on local side, or null if there's no record
+     */
+    public suspend fun getMessageEventId(id: MESSAGE): EventId?
+
+    /**
+     * Provides a way to get mapping of event IDs.
+     *
+     * @param id the matrix event ID
+     * @return [MESSAGE] of the same message on local side, or null if there's no record
+     */
+    public suspend fun getMessageEventId(id: EventId): MESSAGE?
 }

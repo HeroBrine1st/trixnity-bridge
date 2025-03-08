@@ -26,9 +26,23 @@ public interface RoomRepository<ACTOR : Any, ROOM : Any> {
      * It is guaranteed that [remoteId] relates to [actorId] in cases when [remoteId] contains [ACTOR],
      * allowing to strip [ACTOR] from [remoteId]. Implementations SHOULD check that it is the case.
      *
+     * After calling this method, room is considered to be bridged, as it is returned by [getRemoteRoom], [getMxRoom]
+     * and optionally considered by [ActorRepository.getActorIdByEvent].
+     *
      * [actorId] and [isDirect] can be ignored if bridge doesn't need it.
      *
      * This method MUST be idempotent.
      */
     public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM, isDirect: Boolean)
+
+    /**
+     * This method returns true if room is bridged. Otherwise, it returns false.
+     *
+     * Most probably it can be replaced by comparing result of [getMxRoom] with null, but explicitly returning boolean
+     * from internal store can be more efficient.
+     *
+     * @param id Remote id of room to check
+     * @return true if room is bridged, otherwise false.
+     */
+    public suspend fun isRoomBridged(id: ROOM): Boolean
 }
