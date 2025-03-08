@@ -7,7 +7,7 @@ import net.folivo.trixnity.core.model.EventId
 import ru.herobrine1st.matrix.bridge.repository.MessageRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
-public class MessageRepositoryImpl<MESSAGE : Any> internal constructor(
+public class MessageRepositoryImpl<MESSAGE : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<MESSAGE>,
     internal val stringFormat: StringFormat

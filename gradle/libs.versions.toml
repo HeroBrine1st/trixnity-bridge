@@ -1,7 +1,6 @@
 [versions]
 trixnity = "4.11.2"
 kotlin = "2.1.10"
-ktorm = "4.1.1"
 sqldelight = "2.0.2"
 
 [plugins]
@@ -19,4 +18,5 @@ trixnity-clientserverapi-client = { module = "net.folivo:trixnity-clientserverap
 kotlinLogging = { module = "io.github.oshai:kotlin-logging", version = "7.0.3" }
 
 sqldelight-extensions-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
-#sqldelight-dialect-sqlite = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }
+sqldelight-driver-r2dbc = { module = "app.cash.sqldelight:r2dbc-driver", version.ref = "sqldelight" }
+sqldelight-dialect-postgresql = { module = "app.cash.sqldelight:postgresql-dialect", version.ref = "sqldelight" }

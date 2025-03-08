@@ -8,7 +8,7 @@ import net.folivo.trixnity.core.model.RoomId
 import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
-public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> internal constructor(
+public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val actorIdSerializer: KSerializer<ACTOR>,
     internal val roomIdSerializer: KSerializer<ROOM>,

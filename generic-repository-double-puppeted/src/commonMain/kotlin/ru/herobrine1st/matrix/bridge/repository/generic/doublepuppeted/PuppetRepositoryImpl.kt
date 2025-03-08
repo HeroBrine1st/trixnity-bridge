@@ -7,7 +7,7 @@ import net.folivo.trixnity.core.model.UserId
 import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
-public class PuppetRepositoryImpl<USER : Any> internal constructor(
+public class PuppetRepositoryImpl<USER : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<USER>,
     internal val stringFormat: StringFormat

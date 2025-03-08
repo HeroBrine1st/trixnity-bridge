@@ -9,7 +9,7 @@ import net.folivo.trixnity.core.model.EventId
 import ru.herobrine1st.matrix.bridge.repository.TransactionRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
-public class TransactionRepositoryImpl internal constructor(
+public class TransactionRepositoryImpl @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory
 ) : TransactionRepository {
     @OptIn(DelicateCoroutinesApi::class)

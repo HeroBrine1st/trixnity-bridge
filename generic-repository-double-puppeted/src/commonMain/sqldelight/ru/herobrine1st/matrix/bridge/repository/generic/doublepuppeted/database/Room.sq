@@ -1,28 +1,28 @@
 import kotlin.Boolean;
 import net.folivo.trixnity.core.model.RoomId;
 
-CREATE TABLE Room (
-  roomId TEXT AS RoomId NOT NULL UNIQUE,
-  remoteId TEXT NOT NULL UNIQUE,
-  isDirect INTEGER AS Boolean NOT NULL,
-  actorId INTEGER REFERENCES Actor(id) NOT NULL,
+CREATE TABLE room (
+  roomId VARCHAR(255) AS RoomId NOT NULL UNIQUE,
+  remoteId VARCHAR(4096) NOT NULL UNIQUE,
+  isDirect BOOLEAN NOT NULL,
+  actorId INTEGER REFERENCES actor(id) NOT NULL,
   PRIMARY KEY (roomId, remoteId)
 );
 
 getRemoteIdByRoomId:
-SELECT remoteId FROM Room WHERE roomId = ?;
+SELECT remoteId FROM room WHERE roomId = ?;
 
 getRoomIdByRemoteId:
-SELECT roomId FROM Room WHERE remoteId = ?;
+SELECT roomId FROM room WHERE remoteId = ?;
 
 create:
-INSERT INTO Room(roomId, remoteId, isDirect, actorId)
-VALUES (?, ?, ?, (SELECT id FROM Actor WHERE naturalId = ?));
+INSERT INTO room(roomId, remoteId, isDirect, actorId)
+VALUES (?, ?, ?, (SELECT id FROM actor WHERE naturalId = ?));
 
 getActorByRoomId:
-SELECT Actor.naturalId FROM Room
-JOIN Actor ON Actor.id = Room.actorId
-WHERE Room.roomId = ?;
+SELECT actor.naturalId FROM room
+JOIN actor ON actor.id = room.actorId
+WHERE room.roomId = ?;
 
 isRoomBridged:
-SELECT EXISTS (SELECT * FROM Room WHERE remoteId = ?);
+SELECT EXISTS (SELECT * FROM room WHERE remoteId = ?);

@@ -15,6 +15,10 @@ kotlin {
             implementation(projects.bridge)
             implementation(libs.sqldelight.extensions.coroutines)
         }
+        jvmMain.dependencies {
+            implementation(libs.kotlinLogging)
+            implementation(libs.sqldelight.driver.r2dbc)
+        }
     }
 }
 
@@ -22,7 +26,7 @@ sqldelight {
     databases {
         create("Database") {
             packageName.set("ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.database")
-            //dialect(libs.sqldelight.dialect.sqlite)
+            dialect(libs.sqldelight.dialect.postgresql)
             generateAsync = true
         }
     }

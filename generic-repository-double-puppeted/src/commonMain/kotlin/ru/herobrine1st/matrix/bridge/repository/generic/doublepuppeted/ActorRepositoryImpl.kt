@@ -15,7 +15,7 @@ import ru.herobrine1st.matrix.bridge.repository.ActorRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
 // TODO: there's currently no way to add actors
-public class ActorRepositoryImpl<ACTOR : Any> internal constructor(
+public class ActorRepositoryImpl<ACTOR : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<ACTOR>,
     internal val stringFormat: StringFormat
