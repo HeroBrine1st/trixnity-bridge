@@ -40,15 +40,17 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     applicationJob: Job,
     private val client: MatrixClientServerApiClient,
     private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
-    private val actorRepository: ActorRepository<ACTOR>,
-    private val transactionRepository: TransactionRepository,
-    private val roomRepository: RoomRepository<ACTOR, ROOM>,
-    private val puppetRepository: PuppetRepository<USER>,
-    private val messageRepository: MessageRepository<MESSAGE>,
+    repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
     idMapperBuilder: RemoteIdToMatrixMapper.Builder<ROOM, USER>,
     bridgeConfig: BridgeConfig,
 ) : ApplicationServiceApiServerHandler {
+
+    private val actorRepository: ActorRepository<ACTOR> = repositorySet.actorRepository
+    private val messageRepository: MessageRepository<MESSAGE> = repositorySet.messageRepository
+    private val puppetRepository: PuppetRepository<USER> = repositorySet.puppetRepository
+    private val roomRepository: RoomRepository<ACTOR, ROOM> = repositorySet.roomRepository
+    private val transactionRepository: TransactionRepository = repositorySet.transactionRepository
 
     private val appServiceBotId: UserId = UserId(bridgeConfig.botLocalpart, bridgeConfig.homeserverDomain)
     private val puppetPrefix by bridgeConfig::puppetPrefix
