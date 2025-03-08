@@ -1,5 +1,6 @@
 package ru.herobrine1st.matrix.bridge.repository
 
+import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.RemoteWorker
@@ -54,4 +55,16 @@ public interface ActorRepository<ACTOR : Any> {
     // probably MSC4171 can be required in some rooms and not required in other, this method currently has no vote on that
     // if this method gets a room id, RemoteWorker.getRoomMembers doc should be updated
     public suspend fun getMxUserOfActorPuppet(actorId: ACTOR): UserId?
+
+    /**
+     * This method provides bridge with the information about currently available workers.
+     *
+     * If new actor is emerged, it will be automatically subscribed to via [RemoteWorker.getEvents]
+     * If actor is removed, subscription will be automatically terminated. RemoteWorker SHOULD NOT try to complete it itself,
+     * but it is possible to return FatalFailure in case of authentication revocation or other internal bridge failures due to
+     * account removal.
+     *
+     * @return Flow of currently available remote actor ids
+     */
+    public fun getActorsFlow(): Flow<List<ACTOR>>
 }

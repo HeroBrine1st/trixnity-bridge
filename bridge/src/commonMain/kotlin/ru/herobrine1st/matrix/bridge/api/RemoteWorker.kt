@@ -40,19 +40,6 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     )
 
     /**
-     * This method provides bridge with the information about currently available workers.
-     *
-     * If new actor is emerged, it will be automatically subscribed to via [getEvents]
-     * If actor is removed, subscription will be automatically terminated. RemoteWorker SHOULD NOT try to complete it itself,
-     * but it is possible to return FatalFailure in case of authentication revocation or other internal bridge failures due to
-     * account removal.
-     *
-     * @return Flow of currently available remote actor ids
-     */
-    // TODO move to repository
-    public fun getActorsFlow(): Flow<List<ACTOR>>
-
-    /**
      * This method provides a subscription to remote side events.
      *
      * There's no constraints on implementation of this method, be it long-polling, web sockets, periodic polling etc.

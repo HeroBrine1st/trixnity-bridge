@@ -190,7 +190,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private fun subscribeToRemoteSide() {
         val terminated = mutableSetOf<ACTOR>() // actors that are in fatal failure
         val jobs = mutableMapOf<ACTOR, Job>()
-        remoteWorker.getActorsFlow().onEach { actors ->
+        actorRepository.getActorsFlow().onEach { actors ->
             // Subscribe to new actors, preserve subscription to currently existing and cancel subscription to dropped actors
             actors.forEach { actorId ->
                 if (actorId in terminated) return@forEach
