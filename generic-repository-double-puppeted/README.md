@@ -48,5 +48,5 @@ val repositorySet = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, Remote
 (Remote...Id are your own types)
 
 Support for adding actors programmatically is coming soon™.  
-SQLite support across JVM and Native was attempted, but SQLDelight doesn't support async SQLite.
+SQLite support across JVM and Native platforms was attempted, but SQLDelight doesn't support async SQLite.
 
