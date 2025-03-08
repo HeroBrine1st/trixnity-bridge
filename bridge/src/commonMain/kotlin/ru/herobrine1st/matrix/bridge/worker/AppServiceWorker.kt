@@ -27,6 +27,7 @@ import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 import ru.herobrine1st.matrix.bridge.exception.UnhandledEventException
 import ru.herobrine1st.matrix.bridge.internal.EventHandlerScopeImpl
+import ru.herobrine1st.matrix.bridge.internal.RemoteWorkerAPIImpl
 import ru.herobrine1st.matrix.bridge.internal.RemoteWorkerFatalFailureException
 import ru.herobrine1st.matrix.bridge.repository.*
 import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
@@ -39,7 +40,7 @@ private const val DELAY_EXPONENTIAL_BACKOFF_COEFFICIENT = 2.0
 public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     applicationJob: Job,
     private val client: MatrixClientServerApiClient,
-    private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
+    remoteWorkerFactory: RemoteWorkerFactory<ACTOR, USER, ROOM, MESSAGE>,
     repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
     idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
@@ -60,6 +61,10 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val blacklist = bridgeConfig.provisioning.blacklist
 
     private val idMapper = idMapperFactory.create(roomAliasPrefix, puppetPrefix, homeserverDomain)
+
+    private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE> = remoteWorkerFactory.getRemoteWorker(
+        RemoteWorkerAPIImpl(messageRepository, puppetRepository, roomRepository)
+    )
 
     // FIXME apparently applicationJob is SupervisorJob
     // errors render bridge non-functional but do not kill process

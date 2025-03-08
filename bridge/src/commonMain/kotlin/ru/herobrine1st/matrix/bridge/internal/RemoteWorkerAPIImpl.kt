@@ -9,8 +9,8 @@ import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 
 internal class RemoteWorkerAPIImpl<USER : Any, ROOM : Any, MESSAGE : Any>(
     val messageRepository: MessageRepository<MESSAGE>,
-    val roomRepository: RoomRepository<*, ROOM>,
-    val puppetRepository: PuppetRepository<USER>
+    val puppetRepository: PuppetRepository<USER>,
+    val roomRepository: RoomRepository<*, ROOM>
 ) : RemoteWorkerAPI<USER, ROOM, MESSAGE> {
     override suspend fun getMessageEventId(id: MESSAGE) = messageRepository.getMessageEventId(id)
 
