@@ -53,11 +53,11 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val transactionRepository: TransactionRepository = repositorySet.transactionRepository
 
     private val appServiceBotId: UserId = UserId(bridgeConfig.botLocalpart, bridgeConfig.homeserverDomain)
-    private val puppetPrefix by bridgeConfig::puppetPrefix
-    private val roomAliasPrefix by bridgeConfig::roomAliasPrefix
-    private val homeserverDomain by bridgeConfig::homeserverDomain
-    private val whitelist by bridgeConfig.provisioning::whitelist
-    private val blacklist by bridgeConfig.provisioning::blacklist
+    private val puppetPrefix = bridgeConfig.puppetPrefix
+    private val roomAliasPrefix = bridgeConfig.roomAliasPrefix
+    private val homeserverDomain = bridgeConfig.homeserverDomain
+    private val whitelist = bridgeConfig.provisioning.whitelist
+    private val blacklist = bridgeConfig.provisioning.blacklist
 
     private val idMapper = idMapperBuilder.create(roomAliasPrefix, puppetPrefix, homeserverDomain)
 
