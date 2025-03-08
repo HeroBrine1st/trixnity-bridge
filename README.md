@@ -36,8 +36,10 @@ code, and can be extracted to another middleman interface (an adapter), which wi
 provision, but will also be available for external implementations, allowing for more control over created rooms and
 users.
 
-The only drawback is harder development and more boilerplate. However, it is possible to provide reference repository
-implementation for great boilerplate size decrease.
+The only drawback is harder development and more boilerplate.
+
+There is a reference [generic repository implementation](generic-repository-double-puppeted) that allows for great
+boilerplate size decrease.
 
 # Examples
 
@@ -54,11 +56,7 @@ public interface RemoteWorker<ACTOR : RemoteActorId, USER : RemoteUserId, ROOM :
         roomId: ROOM,
         event: ClientEvent.RoomEvent<*>
     )
-
-    // a stream of actors that are registered in bridge. Actor is an account (e.g. bot with discord webhooks) that *acts* on bridged service
-    // (will be moved to one of the repositories due to single responsibility principle violation)
-    public fun getActorsFlow(): Flow<List<ACTOR>>
-
+    
     // a stream of events from bridged service
     public fun getEvents(actorId: ACTOR): Flow<WorkerEvent<USER, ROOM, MESSAGE>>
 

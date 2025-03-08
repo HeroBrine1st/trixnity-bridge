@@ -1,6 +1,8 @@
 This is a generic repository implementation for double-puppeted (non-personal) bridges.
 It uses `kotlinx.serialization` to convert generic IDs to String and back.
 
+Currently, this implementation doesn't support adding actors programmatically. Also, untested.
+
 # Usage
 
 Add R2DBC drivers. Only PostgreSQL is supported, other DBMS will likely fail:
