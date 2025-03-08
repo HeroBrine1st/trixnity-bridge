@@ -13,7 +13,7 @@ Add R2DBC drivers. Only PostgreSQL is supported, other DBMS will likely fail:
 
 ```
 // libs.versions.toml
-r2dbc-postgresql = {module="org.postgresql:r2dbc-postgresql", version="1.0.7.RELEASE"}
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version = "1.0.7.RELEASE" }
 r2dbc-pool = { module = "io.r2dbc:r2dbc-pool", version = "1.0.1.RELEASE" }
 
 // dependencies
