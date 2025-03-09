@@ -30,7 +30,6 @@ public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> @PublishedApi internal 
         remoteId: ROOM,
         isDirect: Boolean
     ): Unit = databaseFactory.useDatabase { database ->
-        // TODO idempotency
         database.roomQueries.create(
             mxId,
             stringFormat.encodeToString(roomIdSerializer, remoteId),

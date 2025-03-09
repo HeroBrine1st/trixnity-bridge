@@ -30,8 +30,6 @@ public interface RoomRepository<ACTOR : Any, ROOM : Any> {
      * and optionally considered by [ActorRepository.getActorIdByEvent].
      *
      * [actorId] and [isDirect] can be ignored if bridge doesn't need it.
-     *
-     * This method MUST be idempotent.
      */
     public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM, isDirect: Boolean)
 
