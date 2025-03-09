@@ -22,21 +22,6 @@ public interface RemoteWorkerAPI<USER, ROOM, MESSAGE> {
     public suspend fun getMessageEventId(id: EventId): MESSAGE?
 
     /**
-     * This method returns author of message, or null if there's no record.
-     *
-     * This method MUST return null if message author is not a puppet.
-     *
-     * It is recommended to explicitly request this from homeserver.
-     *
-     * @param id The same value as was previously used in [MessageEvent.messageId]
-     * @return [USER] of author of this message, or null
-     */
-    // exact reason of deprecation: this method is created due to one specific implementation, which doesn't return
-    // author info in some events. So, this method is a mere workaround.
-    @Deprecated("State hoarding. Can be replaced with explicit request to homeserver.", level = DeprecationLevel.ERROR)
-    public suspend fun getMessageAuthor(id: MESSAGE): USER?
-
-    /**
      * @param id remote ID of puppet
      * @return matrix id of the same puppet or null if not found
      */

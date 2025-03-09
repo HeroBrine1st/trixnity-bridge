@@ -16,9 +16,6 @@ internal class RemoteWorkerAPIImpl<USER : Any, ROOM : Any, MESSAGE : Any>(
 
     override suspend fun getMessageEventId(id: EventId) = messageRepository.getMessageEventId(id)
 
-    @Deprecated("State hoarding. Can be replaced with explicit request to homeserver.", level = DeprecationLevel.ERROR)
-    override suspend fun getMessageAuthor(id: MESSAGE): USER? = error("Deprecated")
-
     override suspend fun getPuppetId(id: USER) = puppetRepository.getPuppetId(id)
 
     override suspend fun getPuppetId(id: UserId) = puppetRepository.getPuppetId(id)
