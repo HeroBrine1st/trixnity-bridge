@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "ru.herobrine1st.matrix"
-    version = "1.0.1-SNAPSHOT"
+    version = "0.1.0-1"
 
     repositories {
         mavenCentral()
