@@ -4,7 +4,6 @@ It uses `kotlinx.serialization` to convert generic IDs to String and back.
 Currently, this implementation is limited:
 
 - No support for programmatic actor provision
-- Violates idempotency contract
 - Untested
 
 # Usage
