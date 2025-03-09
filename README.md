@@ -34,7 +34,7 @@ users.
 
 The only drawback is slightly harder development and more boilerplate.
 
-There is a reference [generic repository implementation](generic-repository-double-puppeted) that allows for great
+There is a reference [generic repository implementation](generic-repository-doublepuppeted) that allows for great
 boilerplate size decrease.
 
 # Examples
