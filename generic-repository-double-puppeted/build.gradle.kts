@@ -18,6 +18,8 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.kotlinLogging)
             implementation(libs.sqldelight.driver.r2dbc)
+            implementation(libs.r2dbc.spi)
+            implementation(libs.reactor)
         }
     }
 }
