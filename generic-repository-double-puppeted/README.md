@@ -31,21 +31,24 @@ io.r2dbc.pool.PoolingConnectionFactoryProvider
 Then use like that:
 
 ```kotlin
-val repositorySet = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, RemoteRoomId, RemoteMessageId> {
-    option(DRIVER, POOLING_DRIVER)
-    option(PROTOCOL, "postgresql")
-    option(HOST, host)
-    option(PORT, port)
-    option(USER, username)
-    option(PASSWORD, password)
-    option(DATABASE, database)
-    // other options if needed..
-    option(MAX_IDLE_TIME, connectionIdleTime)
-    option(MAX_SIZE, maxConnectionPoolSize)
-}
+// Remote...Id are your own types
+val repositorySet = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, RemoteRoomId, RemoteMessageId>(
+    connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder().apply {
+        option(DRIVER, POOLING_DRIVER)
+        option(PROTOCOL, "postgresql")
+        option(HOST, host)
+        option(PORT, port)
+        option(USER, username)
+        option(PASSWORD, password)
+        option(DATABASE, database)
+        // other options if needed..
+        option(MAX_IDLE_TIME, connectionIdleTime)
+        option(MAX_SIZE, maxConnectionPoolSize)
+    }.build())
+)
 ```
 
-(Remote...Id are your own types)
+Then pass resulting RepositorySet to AppServiceWorker.
 
 Support for adding actors programmatically is coming soon™.  
 SQLite support across JVM and Native platforms was attempted, but SQLDelight doesn't support async SQLite.
