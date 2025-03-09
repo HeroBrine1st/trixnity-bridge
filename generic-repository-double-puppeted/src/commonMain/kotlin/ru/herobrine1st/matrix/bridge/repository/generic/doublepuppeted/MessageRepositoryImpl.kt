@@ -1,5 +1,6 @@
 package ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted
 
+import app.cash.sqldelight.async.coroutines.awaitAsOne
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
@@ -16,7 +17,15 @@ public class MessageRepositoryImpl<MESSAGE : Any> @PublishedApi internal constru
         remoteMessageId: MESSAGE,
         mxEventId: EventId
     ): Unit = databaseFactory.useDatabase { database ->
-        database.messageQueries.createRelation(mxEventId, stringFormat.encodeToString(serializer, remoteMessageId))
+        val encoded = stringFormat.encodeToString(serializer, remoteMessageId)
+        val inserted = database.messageQueries.createRelation(mxEventId, encoded)
+            .awaitAsOne()
+        check(inserted >= 0L)
+        if (inserted != 0L) return@useDatabase
+        // as only insertion is used, idempotency does not require explicit transaction
+        val conflicted = database.messageQueries.getByConflict(mxEventId, encoded).awaitAsOne()
+        if (conflicted.eventId == mxEventId && conflicted.remoteId == encoded) return@useDatabase
+        error("Constraint violation! Tried to insert Message(eventId=$mxEventId, remoteId=$encoded), but $conflicted is already in database")
     }
 
     override suspend fun getMessageEventId(id: MESSAGE): EventId? = databaseFactory.useDatabase { database ->

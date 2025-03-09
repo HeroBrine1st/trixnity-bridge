@@ -7,7 +7,15 @@ CREATE TABLE message (
 );
 
 createRelation:
-INSERT INTO message(eventId, remoteId) VALUES (?, ?);
+WITH inserted AS (
+  INSERT INTO message(eventId, remoteId) VALUES (?, ?)
+  ON CONFLICT DO NOTHING
+  RETURNING *
+)
+SELECT COUNT(*) FROM inserted;
+
+getByConflict:
+SELECT eventId, remoteId FROM message WHERE eventId = ? OR remoteId = ?;
 
 getRemoteId:
 SELECT remoteId FROM message WHERE eventId = ?;
