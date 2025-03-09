@@ -7,8 +7,7 @@ A work-in-progress next-generation microframework for writing matrix bridges
 using [AS API](https://spec.matrix.org/latest/application-service-api/). Its purpose is to outline a general bridge
 algorithm without interferences with your code.
 
-This framework is not ready for public usage, and currently lacks support for generic actors (e.g. webhooks and other
-accounts with ability of impersonation).
+This framework is not ready for public usage.
 
 This bridge features one ability many frameworks lack: it does not interfere with your code. You
 provide a framework with a stream of events from bridged service and framework provides you with a stream of events from
