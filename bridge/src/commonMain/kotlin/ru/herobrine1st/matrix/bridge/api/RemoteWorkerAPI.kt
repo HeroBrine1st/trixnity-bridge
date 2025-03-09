@@ -1,6 +1,7 @@
 package ru.herobrine1st.matrix.bridge.api
 
 import net.folivo.trixnity.core.model.EventId
+import net.folivo.trixnity.core.model.RoomId
 import net.folivo.trixnity.core.model.UserId
 import ru.herobrine1st.matrix.bridge.api.RoomEvent.MessageEvent
 
@@ -17,23 +18,38 @@ public interface RemoteWorkerAPI<USER, ROOM, MESSAGE> {
      * Provides a way to get internal mapping of event IDs.
      *
      * @param id The matrix event ID
-     * @return message id of the same message on local side, or null if there's no record
+     * @return message ID of the same message on local side, or null if there's no record
      */
     public suspend fun getMessageEventId(id: EventId): MESSAGE?
 
     /**
      * @param id remote ID of puppet
-     * @return matrix id of the same puppet or null if not found
+     * @return matrix ID of the same puppet or null if not found
      */
     // TODO replicate if there's no such user
     public suspend fun getPuppetId(id: USER): UserId?
 
     /**
      * @param id matrix ID of puppet
-     * @return remote id of the same puppet or null if not found
+     * @return remote ID of the same puppet or null if not found
      */
     public suspend fun getPuppetId(id: UserId): USER?
 
+    /**
+     * Provides a way to get internal mapping of room IDs.
+     *
+     * @param id remote ID of room
+     * @return matrix id of the same room or null if not found
+     */
+    public suspend fun getRoomId(id: ROOM): RoomId?
+
+    /**
+     * Provides a way to get internal mapping of room IDs.
+     *
+     * @param id matrix ID of room
+     * @return remote ID of the same room or null if not found
+     */
+    public suspend fun getRoomId(id: RoomId): ROOM?
 
     /**
      * Returns true if room denoted by [id] is bridged.

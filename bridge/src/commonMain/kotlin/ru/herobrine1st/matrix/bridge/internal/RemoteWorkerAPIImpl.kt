@@ -1,6 +1,7 @@
 package ru.herobrine1st.matrix.bridge.internal
 
 import net.folivo.trixnity.core.model.EventId
+import net.folivo.trixnity.core.model.RoomId
 import net.folivo.trixnity.core.model.UserId
 import ru.herobrine1st.matrix.bridge.api.RemoteWorkerAPI
 import ru.herobrine1st.matrix.bridge.repository.MessageRepository
@@ -19,6 +20,10 @@ internal class RemoteWorkerAPIImpl<USER : Any, ROOM : Any, MESSAGE : Any>(
     override suspend fun getPuppetId(id: USER) = puppetRepository.getPuppetId(id)
 
     override suspend fun getPuppetId(id: UserId) = puppetRepository.getPuppetId(id)
+
+    override suspend fun getRoomId(id: ROOM): RoomId? = roomRepository.getMxRoom(id)
+
+    override suspend fun getRoomId(id: RoomId): ROOM? = roomRepository.getRemoteRoom(id)
 
     override suspend fun isRoomBridged(id: ROOM) = roomRepository.isRoomBridged(id)
 
