@@ -1,8 +1,23 @@
 CREATE TABLE actor (
   id SERIAL PRIMARY KEY NOT NULL,
-  naturalId VARCHAR(4096) NOT NULL UNIQUE
-  -- include data, like mx-puppet-bridge?
+  naturalId VARCHAR(4096) NOT NULL UNIQUE,
+  data TEXT NOT NULL
 );
 
 getAllIds:
 SELECT naturalId FROM actor;
+
+getAll:
+SELECT naturalId, data FROM actor;
+
+getActorData:
+SELECT data FROM actor WHERE naturalId = ?;
+
+add:
+INSERT INTO actor(naturalId, data) VALUES (?, ?);
+
+update:
+UPDATE actor SET data = ? WHERE naturalId = ? RETURNING 1;
+
+remove:
+DELETE FROM actor WHERE naturalId = ? RETURNING 1;

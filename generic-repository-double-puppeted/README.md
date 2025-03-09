@@ -1,10 +1,7 @@
-This is a generic repository implementation for double-puppeted (non-personal) bridges.
-It uses `kotlinx.serialization` to convert generic IDs to String and back.
+This is a reference generic repository implementation for double-puppeted (non-personal) bridges, supporting only
+PostgreSQL. Currently, it is untested.
 
-Currently, this implementation is limited:
-
-- No support for programmatic actor provision
-- Untested
+This implementation uses `kotlinx.serialization` to convert generic IDs to String and back.
 
 # Usage
 
@@ -30,8 +27,8 @@ io.r2dbc.pool.PoolingConnectionFactoryProvider
 Then use like that:
 
 ```kotlin
-// Remote...Id are your own types
-val repositorySet = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, RemoteRoomId, RemoteMessageId>(
+// Remote...Id are your own types. Each type should be @Serializable, or pass StringFormat with SerializersModule to add support
+val (repositorySet, actorProvisionRepository) = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, RemoteRoomId, RemoteMessageId, ActorData>(
     connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder().apply {
         option(DRIVER, POOLING_DRIVER)
         option(PROTOCOL, "postgresql")
@@ -47,8 +44,16 @@ val repositorySet = createR2DBCRepositorySet<RemoteActorId, RemoteUserId, Remote
 )
 ```
 
-Then pass resulting RepositorySet to AppServiceWorker.
+Then pass resulting RepositorySet to AppServiceWorker. `actorProvisionRepository` allows to CRUD actors programmatically
+and should be passed to RemoteWorker so that it can get actor data for each actor.  
+You can also ignore storing actor data in database and use that only to add actor IDs. This may be useful if actor list
+is rather constant (e.g. configuration file) and your actors access that directly.
 
-Support for adding actors programmatically is coming soon™.  
-SQLite support across JVM and Native platforms was attempted, but SQLDelight doesn't support async SQLite.
+# Why dedicated DBMS?
+
+SQLite support across JVM and Native platforms was attempted, but SQLDelight doesn't support async SQLite. The same with
+H2.  
+And it was far too late to change everything back to blocking access.
+
+Anyway, if you have installed synapse, you'll have no problem configuring postgres next to it - so it's a minor issue.
 

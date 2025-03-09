@@ -20,14 +20,15 @@ import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.
 
 private val logger = KotlinLogging.logger {}
 
-public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> createR2DBCRepositorySet(
+public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DATA> createR2DBCRepositorySet(
     actorIdSerializer: KSerializer<ACTOR>,
     puppetIdSerializer: KSerializer<USER>,
     roomIdSerializer: KSerializer<ROOM>,
     messageIdSerializer: KSerializer<MESSAGE>,
+    actorDataSerializer: KSerializer<ACTOR_DATA>,
     stringFormat: StringFormat = Json.Default,
     connectionFactory: ConnectionFactory
-): RepositorySet<ACTOR, USER, ROOM, MESSAGE> {
+): Pair<RepositorySet<ACTOR, USER, ROOM, MESSAGE>, ActorProvisionRepository<ACTOR, ACTOR_DATA>> {
     val databaseFactory = R2DBCDatabaseFactory(connectionFactory.create())
     databaseFactory.getDriver().use {
         it.await(null, "CREATE TABLE IF NOT EXISTS metadata(version INTEGER NOT NULL)", 0)
@@ -55,14 +56,21 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> createR2
     }
 
     return createRepositories(
-        databaseFactory, actorIdSerializer, puppetIdSerializer, roomIdSerializer, messageIdSerializer, stringFormat
+        databaseFactory,
+        actorIdSerializer,
+        puppetIdSerializer,
+        roomIdSerializer,
+        messageIdSerializer,
+        actorDataSerializer,
+        stringFormat
     )
 }
 
-public suspend inline fun <reified ACTOR : Any, reified USER : Any, reified ROOM : Any, reified MESSAGE : Any> createR2DBCRepositorySet(
+public suspend inline fun <reified ACTOR : Any, reified USER : Any, reified ROOM : Any, reified MESSAGE : Any, reified ACTOR_DATA> createR2DBCRepositorySet(
     stringFormat: StringFormat = Json.Default,
     connectionFactory: ConnectionFactory
-): RepositorySet<ACTOR, USER, ROOM, MESSAGE> = createR2DBCRepositorySet<ACTOR, USER, ROOM, MESSAGE>(
-    serializer(), serializer(), serializer(), serializer(),
-    stringFormat, connectionFactory
-)
+): Pair<RepositorySet<ACTOR, USER, ROOM, MESSAGE>, ActorProvisionRepository<ACTOR, ACTOR_DATA>> =
+    createR2DBCRepositorySet<ACTOR, USER, ROOM, MESSAGE, ACTOR_DATA>(
+        serializer(), serializer(), serializer(), serializer(), serializer(),
+        stringFormat, connectionFactory
+    )
