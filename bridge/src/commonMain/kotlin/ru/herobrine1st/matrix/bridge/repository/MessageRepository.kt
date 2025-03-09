@@ -6,7 +6,7 @@ import ru.herobrine1st.matrix.bridge.api.RemoteWorker
 /**
  * This interface is responsible for managing pairs of [MESSAGE] to [EventId], for usage in message relations.
  *
- * Repository MUST ensure one-to-one relation between messages and MUST throw exceptions if it is violated.
+ * Repository MUST ensure one-to-one relation between message IDs and MUST throw exceptions if it is violated.
  */
 public interface MessageRepository<MESSAGE : Any> {
     /**
