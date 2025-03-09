@@ -5,15 +5,12 @@ is directly based on it.
 
 A work-in-progress next-generation microframework for writing matrix bridges
 using [AS API](https://spec.matrix.org/latest/application-service-api/). Its purpose is to outline a general bridge
-algorithm without interferences with your code.
+algorithm.
 
-This framework is not ready for public usage.
-
-This bridge features one ability many frameworks lack: it does not interfere with your code. You
+This framework features one ability many others lack: it does not interfere with your code. You
 provide a framework with a stream of events from bridged service and framework provides you with a stream of events from
 the matrix. The framework then does the heavy lifting of bridging the two together. It runs on Ktor, another
-microframework,
-allowing you to even create user-facing preferences to bridge particular rooms of user's choice.
+microframework, allowing you to even create user-facing preferences to bridge particular rooms of user's choice.
 
 What makes this framework next-generation is this set of features:
 
@@ -35,7 +32,7 @@ code, and can be extracted to another middleman interface (an adapter), which wi
 provision, but will also be available for external implementations, allowing for more control over created rooms and
 users.
 
-The only drawback is harder development and more boilerplate.
+The only drawback is slightly harder development and more boilerplate.
 
 There is a reference [generic repository implementation](generic-repository-double-puppeted) that allows for great
 boilerplate size decrease.
@@ -87,9 +84,9 @@ the Free Software Foundation, either version 3 of the License, or
 
 This library is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with this library.  If not, see <https://www.gnu.org/licenses/>.
+along with this library. If not, see <https://www.gnu.org/licenses/>.
 ```
