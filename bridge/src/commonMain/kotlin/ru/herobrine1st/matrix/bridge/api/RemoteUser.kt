@@ -1,10 +1,12 @@
 package ru.herobrine1st.matrix.bridge.api
 
 /**
- * A representation of a user on remote network. Must be the same for all chats on the same network for the same user.
+ * A representation of a user on remote network.
  *
  * All fields can be changed in subsequent updates for particular user denoted by [remoteId].
- * [remoteId] should never change, as it is used to identify remote users and create mappings between users and puppets.
+ * [remoteId] should never change, as it is used to identify remote users and create mappings between users and puppets,
+ * and MUST be the same for all chats on the same network for the same actor. It generally SHOULD be the same
+ * for all chats on the same network.
  *
  * @param displayName Display name for this user.
  * @param remoteId Unique id on remote network. Use never-changing identifiers to create this value.
