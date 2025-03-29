@@ -25,7 +25,7 @@ What makes this framework next-generation is this set of features:
 
 \* You must fix errors yourself of course, but then you can restart the bridge and it will continue where it crashed.
 You must also satisfy the idempotency contract.  
-\*\* Currently alias is created (and then removed) on room provision as idempotency measurement, but its usage will be
+\*\* Currently alias is created (and then removed) on room provision as idempotency measure, but its usage will be
 removed entirely via custom state events that will also allow for partial data recovery and migration.  
 \*\*\* Currently, framework tries to create all rooms and users it sees for first time. However, this only bloats the
 code, and can be extracted to another middleman interface (an adapter), which will be implemented to restore automatic
