@@ -345,7 +345,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
 
         // Initialize this replica before sending to database for recovery purposes
         val remoteUserData = userData ?: remoteWorker.getUser(actorId, userIdToReplicate)
-        check(remoteUserData.remoteId == userIdToReplicate) { "User data $remoteUserData does not correspond to user $userIdToReplicate! (userData=$userData)" }
+        check(remoteUserData.id == userIdToReplicate) { "User data $remoteUserData does not correspond to user $userIdToReplicate! (userData=$userData)" }
 
         client.user.setDisplayName(
             puppetId,
