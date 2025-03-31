@@ -105,7 +105,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * at [RemoteWorker] discretion. In the latter case, if puppet is not created yet, [getUser] is called to get user data.
      * Generally this method should not return user data, but if it is cheap to get user data in bulk,
      * it is an efficient optimisation to return this data here. The returned data SHOULD be fresh as defined by [getUser].
-     * [RemoteUser.remoteId] MUST be the same as first value of a pair.
+     * [RemoteUser.id] MUST be the same as first value of a pair.
      *
      * Implementation SHOULD NOT throw any exceptions outside of [Flow]. Implementation SHOULD pass exceptions down
      * this flow in case of network or other failures.
