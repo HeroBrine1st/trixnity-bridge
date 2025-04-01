@@ -22,6 +22,7 @@ What makes this framework next-generation is this set of features:
 - Statelessness as it is even possible - the only state saved are ID mappings and handled transaction IDs, as well as
   registered actors.
 - \[TODO\] A strict mode disabling automatic room and user provision***
+- \[TODO\] Support for webhook-based bridges
 
 \* You must fix errors yourself of course, but then you can restart the bridge and it will continue where it crashed.
 You must also satisfy the idempotency contract.  
