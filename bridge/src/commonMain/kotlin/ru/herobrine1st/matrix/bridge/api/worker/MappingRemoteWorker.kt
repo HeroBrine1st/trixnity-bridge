@@ -2,9 +2,7 @@ package ru.herobrine1st.matrix.bridge.api.worker
 
 import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
-import ru.herobrine1st.matrix.bridge.api.RemoteRoom
-import ru.herobrine1st.matrix.bridge.api.RemoteUser
+import ru.herobrine1st.matrix.bridge.api.*
 import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
 
 // This RemoteWorker supplements ProvisioningRemoteWorker with entities to be provisioned, along with other events
@@ -32,15 +30,18 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                 public val roomId: ROOM
                 public val eventId: RemoteEventId
 
-                public data class Create<ROOM : Any>(
-                    val roomData: RemoteRoom<ROOM>,
-                    override val eventId: RemoteEventId
-                ) : Room<Nothing, ROOM, Nothing> {
+                public data class Create<USER : Any, ROOM : Any>(
+                    val roomData: RemoteRoom<USER, ROOM>,
+                    override val eventId: RemoteEventId,
+                ) : Room<USER, ROOM, Nothing> {
                     override val roomId: ROOM by roomData::id
                 }
 
                 // TODO membership
-                // TODO message - use DRY somehow
+
+                public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
+                    val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
+                ) : Room<USER, ROOM, MESSAGE>, IRemoteMessageEventData<USER, ROOM, MESSAGE> by messageData
             }
 
             public sealed interface User<USER : Any> : Remote<USER, Nothing, Nothing> {

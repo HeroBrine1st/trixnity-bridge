@@ -33,8 +33,8 @@ public sealed interface RoomEvent<USER : Any, ROOM : Any, MESSAGE : Any> {
     public data class RoomCreation<USER : Any, ROOM : Any, MESSAGE : Any>(
         override val roomId: ROOM,
         override val eventId: RemoteEventId,
-        override val roomData: RemoteRoom<ROOM>? = null
-    ) : RoomEvent<USER, ROOM, MESSAGE>, RoomDataHolder<ROOM>
+        override val roomData: RemoteRoom<ROOM, USER>? = null,
+    ) : RoomEvent<USER, ROOM, MESSAGE>, RoomDataHolder<ROOM, USER>
 
     public data class RoomMember<USER : Any, ROOM : Any, MESSAGE : Any>(
         override val roomId: ROOM,

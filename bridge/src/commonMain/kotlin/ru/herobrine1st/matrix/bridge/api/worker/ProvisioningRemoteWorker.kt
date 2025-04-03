@@ -5,6 +5,8 @@ import net.folivo.trixnity.core.model.RoomId
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
+import ru.herobrine1st.matrix.bridge.api.IRemoteMessageEventData
+import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
 import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
 
 /**
@@ -48,7 +50,10 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
                 ) : Room<Nothing, ROOM, Nothing>
 
                 // TODO membership
-                // TODO message - use DRY somehow
+
+                public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
+                    val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
+                ) : Room<USER, ROOM, MESSAGE>, IRemoteMessageEventData<USER, ROOM, MESSAGE> by messageData
             }
 
             public sealed interface User<USER : Any> : Remote<USER, Nothing, Nothing> {
