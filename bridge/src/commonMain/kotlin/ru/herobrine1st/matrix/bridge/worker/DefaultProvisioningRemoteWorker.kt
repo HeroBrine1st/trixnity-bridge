@@ -21,6 +21,7 @@ import ru.herobrine1st.matrix.bridge.api.RemoteRoom
 import ru.herobrine1st.matrix.bridge.api.RemoteUser
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Message
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.repository.*
 import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
@@ -56,42 +57,45 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
     }
 
     override fun getEvents(actorId: ACTOR): Flow<ProvisioningRemoteWorker.Event<USER, ROOM, MESSAGE>> =
-        mappingRemoteWorker.getEvents(actorId).transform {
-            when (it) {
-                is MappingRemoteWorker.Event.Remote.Room -> when (it) {
-                    is MappingRemoteWorker.Event.Remote.Room.Create<ROOM> -> {
-                        val roomId = replicateRemoteRoom(it.roomData, actorId, TODO())
+        mappingRemoteWorker.getEvents(actorId).transform { event ->
+            when (event) {
+                is MappingRemoteWorker.Event.Remote.Room -> when (event) {
+                    is MappingRemoteWorker.Event.Remote.Room.Create<USER, ROOM> -> {
+                        val roomId = replicateRemoteRoom(event.roomData)
                         emit(
                             ProvisioningRemoteWorker.Event.Remote.Room.Create(
                                 roomId,
-                                it.roomId,
-                                it.eventId
+                                event.roomId,
+                                event.eventId
                             )
                         )
                         clearRoomIdempotencyMarker(roomId)
                     }
                     // TODO update event
                     // TODO membership event
-                    // TODO passthrough message events
+                    is MappingRemoteWorker.Event.Remote.Room.Message<USER, ROOM, MESSAGE> -> {
+                        emit(Message(event.messageData))
+                    }
                 }
 
-                is MappingRemoteWorker.Event.Remote.User -> when (it) {
+                is MappingRemoteWorker.Event.Remote.User -> when (event) {
                     is MappingRemoteWorker.Event.Remote.User.Create<USER> -> {
-                        val userId = replicateRemoteUser(it.userData)
+                        val userId = replicateRemoteUser(event.userData)
                         emit(
                             ProvisioningRemoteWorker.Event.Remote.User.Create(
                                 userId,
-                                it.userId,
-                                it.eventId
+                                event.userId,
+                                event.eventId
                             )
                         )
                     }
                     // TODO update event
                 }
 
-                else -> TODO("Passthrough")
+                MappingRemoteWorker.Event.Connected -> emit(ProvisioningRemoteWorker.Event.Connected)
+                is MappingRemoteWorker.Event.Disconnected -> emit(ProvisioningRemoteWorker.Event.Disconnected(event.reason))
+                is MappingRemoteWorker.Event.FatalFailure -> emit(ProvisioningRemoteWorker.Event.FatalFailure(event.reason))
             }
-            TODO()
         }
 
 
@@ -135,23 +139,9 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         return puppetId
     }
 
-
     private suspend fun replicateRemoteRoom(
-        roomData: RemoteRoom<ROOM>,
-        actorId: ACTOR,
-        invitePuppet: UserId,
+        roomData: RemoteRoom<USER, ROOM>,
     ): RoomId {
-        // TODO this method has too much responsibilities
-        //  - Handles direct rooms fully by itself
-        //  - Handles bridge bypasses fully by itself
-        // the goal is to create room, handle direct invites but not joins (they should be handled by memberships)
-        // there may be an issue if remote side supports adding members to direct rooms after creation. Matrix does not support that.
-        // so probably list of parameters is:
-        // - room data
-        // - puppets to be invited (empty if not direct but check is not required), including local user
-        // - the "creator" of the room
-        // then history backfilling will join the puppets either when they join on remote side or instantly as remote side automatically accepts invites
-
         roomRepository.getMxRoom(roomData.id)?.let {
             return it
         }
@@ -159,16 +149,16 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         // Create room from scratch
         logger.trace { "Replicating remote room $roomData" }
 
-        val correspondingLocalUser = actorRepository.getLocalUserIdForActor(actorId)
-        require(correspondingLocalUser != invitePuppet) { "User $invitePuppet is used both as local user and as a puppet, this will lead to undefined behavior!" }
-        if (roomData.isDirect && correspondingLocalUser == null) {
-            logger.warn { "Found direct room $roomData but actor $actorId has no local user, is it intended?" }
-        }
+//        val correspondingLocalUser = actorRepository.getLocalUserIdForActor(actorId)
+//        require(correspondingLocalUser != invitePuppet) { "User $invitePuppet is used both as local user and as a puppet, this will lead to undefined behavior!" }
+//        if (roomData.directData != null && correspondingLocalUser == null) {
+//            logger.warn { "Found direct room $roomData but actor $actorId has no local user, is it intended?" }
+//        }
 
         val displayName = roomData.displayName
-
-        if (displayName != null && roomData.isDirect)
-            logger.warn { "Room $roomData is direct but has display name. Is it intended?" }
+//
+//        if (displayName != null && roomData.directData != null)
+//            logger.warn { "Room $roomData is direct but has display name. Is it intended?" }
 
         // Alias overrides room name generation via heroes and should be avoided
         // TODO implement human-like flow (i.e. store that room with members <...>
@@ -177,29 +167,36 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         // It is also known as Canonical DM, but without HS support we fallback to this human-likeness
 
         val alias = idMapper.buildRoomAlias(roomData.id)
-        val serviceMembersEvent = ServiceMembersEventContent(
-            serviceMembers = listOfNotNull(
-                appServiceBotId,
-                // if room creation is triggered by bridge bypass
-                // TODO in this case we also need to add the other heroes - which is not happening!
-                actorRepository.getMxUserOfActorPuppet(actorId)?.takeIf { it == invitePuppet }
-            )
-        )
+        val creator = roomData.creator?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+
         val roomId = client.room.createRoom(
             name = displayName,
             roomAliasId = alias, // idempotency via stable alias
-            // it is vital to invite correspondingLocalUser here as isDirect works only here
-            invite = setOfNotNull(correspondingLocalUser, invitePuppet),
+
+            // TODO add a way to provide actor admin here, but it should be done in a way that allows delegation
+            //      (e.g. allow anyone to bridge any room of choice)
+            // I think the best method is to get an admin for the replicated room
+            // This bridge can be aware of that via e.g. registration - you simply write the bot about the account on the other side and verify that via code there.
+            // When lower layer can add admin data, we fetch the pair here and voi la.
+            // This has a number of limitations:
+            // - some direct rooms do not have an admin (e.g. 1-1 chats if this bridge is personal). This can be emulated via "everyone is admin", which will invite the real matrix user as well as add admin rights to the other peer
+            invite = (roomData.directData?.members?.mapTo(mutableSetOf()) {
+                // SAFETY: It is guaranteed by MappingRemoteWorker that all members are already provisioned
+                puppetRepository.getPuppetId(it)!!
+            } ?: emptySet()) + appServiceBotId - creator,
             initialState = listOf(
                 // this "direct" room can have up to 4 members (actual user, actual puppet, sender for "sent successfully" via read marks and puppet of actual user for synchronisation cases)
                 InitialStateEvent(
-                    content = serviceMembersEvent,
+                    content = ServiceMembersEventContent(
+                        serviceMembers = listOf(appServiceBotId)
+                    ),
                     stateKey = ""
                 )
             ),
-            // TODO do something with non-personal bridge creating rooms without ability to enter them (bot commands can be used)
+            // TODO powerLevelContentOverride = , for appServiceBotId
             preset = CreateRoom.Request.Preset.PRIVATE,
-            isDirect = roomData.isDirect
+            isDirect = roomData.directData != null,
+            asUserId = creator
         ).recover {
             if (it !is MatrixServerException || it.errorResponse !is ErrorResponse.RoomInUse) throw it
             logger.debug(it) { "Got idempotency hit for alias ${alias.full}, fetching and reusing existing room" }
@@ -217,44 +214,12 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             roomId
         }.getOrThrow()
 
-        // TODO handle by membership events
-//        client.room.joinRoom( // probably idempotent
-//            roomId,
-//            asUserId = invitePuppet
-//        ).recover {
-//            if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
-//                logger.warn { "Got uninvited puppet $invitePuppet after (probably) idempotency hit on room $roomId ($alias), inviting and joining" }
-//                inviteAndJoinPuppetToRoom(
-//                    roomId,
-//                    invitePuppet,
-//                    actorRepository.getMxUserOfActorPuppet(actorId) == invitePuppet
-//                )
-//            } else throw it
-//        }.getOrThrow()
-
-        // TODO handle it by membership events
-//        if (remoteRoom.isDirect) coroutineScope {
-//            remoteWorker.getRoomMembers(actorId, roomIdToReplicate)
-//                .filter { it.first != invitePuppet }
-//                .map {
-//                    async {
-//                        val userId = replicateRemoteUser(it.first, actorId, it.second)
-//                        inviteAndJoinPuppetToRoom(
-//                            mxRoomId = roomId,
-//                            mxPuppetId = userId,
-//                            asServiceUser = false // it is implied by contract on getRoomMembers
-//                        )
-//                    }
-//                }
-//                .buffer() // separate coroutines
-//                .collect { it.await() }
-//        }
         return roomId
     }
 
     private suspend fun clearRoomIdempotencyMarker(roomId: RoomId) {
         val aliasId = client.room.getStateEvent<CanonicalAliasEventContent>(roomId).getOrThrow().alias
-        logger.debug { "Removing canonical alias ${aliasId.full} as room is added to database" }
+        logger.debug { "Removing canonical alias ${aliasId?.full} as room is added to database" }
         if (aliasId != null) client.room.deleteRoomAlias(aliasId) // this actually removes alias, but it leaves event in room
             .getOrThrow()
         client.room.sendStateEvent(roomId, CanonicalAliasEventContent())

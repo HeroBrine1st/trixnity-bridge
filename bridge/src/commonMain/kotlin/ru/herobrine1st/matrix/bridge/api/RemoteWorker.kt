@@ -92,7 +92,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * @param id Room to fetch
      * @return Fresh [RemoteRoom] data instance
      */
-    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<ROOM>
+    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<ROOM, USER>
 
     /**
      * This method provides a [Flow] of remote users in remote room, denoted by [remoteId].
