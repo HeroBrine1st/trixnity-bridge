@@ -7,7 +7,6 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.IRemoteMessageEventData
 import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
-import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
 
 /**
  * This RemoteWorker has ability to provision entities unknown to the bridge, according to events
@@ -38,7 +37,6 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
         public sealed interface Remote<USER : Any, ROOM : Any, MESSAGE : Any> : Event<USER, ROOM, MESSAGE> {
             public sealed interface Room<USER : Any, ROOM : Any, MESSAGE : Any> : Remote<USER, ROOM, MESSAGE> {
                 public val roomId: ROOM
-                public val eventId: RemoteEventId
 
                 /**
                  * A room has been created and pair [mxRoomId]-[roomId] should be stored
@@ -46,10 +44,7 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
                 public data class Create<ROOM : Any>(
                     val mxRoomId: RoomId,
                     override val roomId: ROOM,
-                    override val eventId: RemoteEventId
                 ) : Room<Nothing, ROOM, Nothing>
-
-                // TODO membership
 
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
                     val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
@@ -58,7 +53,6 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
 
             public sealed interface User<USER : Any> : Remote<USER, Nothing, Nothing> {
                 public val userId: USER
-                public val eventId: RemoteEventId
 
                 /**
                  * A user has been created and pair [mxUserId]-[userId] should be stored
@@ -66,7 +60,6 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
                 public data class Create<USER : Any>(
                     public val mxUserId: UserId,
                     override val userId: USER,
-                    override val eventId: RemoteEventId
                 ) : User<USER>
             }
         }

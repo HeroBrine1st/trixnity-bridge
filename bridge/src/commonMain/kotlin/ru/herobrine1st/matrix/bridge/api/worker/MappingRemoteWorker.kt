@@ -3,7 +3,6 @@ package ru.herobrine1st.matrix.bridge.api.worker
 import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.*
-import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
 
 // This RemoteWorker supplements ProvisioningRemoteWorker with entities to be provisioned, along with other events
 // mapping - this worker "maps" the remote, like creating a world map
@@ -28,11 +27,9 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
         public sealed interface Remote<USER : Any, ROOM : Any, MESSAGE : Any> : Event<USER, ROOM, MESSAGE> {
             public sealed interface Room<USER : Any, ROOM : Any, MESSAGE : Any> : Remote<USER, ROOM, MESSAGE> {
                 public val roomId: ROOM
-                public val eventId: RemoteEventId
 
                 public data class Create<USER : Any, ROOM : Any>(
                     val roomData: RemoteRoom<USER, ROOM>,
-                    override val eventId: RemoteEventId,
                 ) : Room<USER, ROOM, Nothing> {
                     override val roomId: ROOM by roomData::id
                 }
@@ -40,7 +37,6 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                 // Represents state machine fields from https://spec.matrix.org/latest/client-server-api/#mroommember
                 public data class Membership<USER : Any, ROOM : Any>(
                     override val roomId: ROOM,
-                    override val eventId: RemoteEventId,
                     // ignored on JOIN and KNOCK
                     val sender: USER?, // if null and [membership] allows for sender other than stateKey (e.g. invite by someone else) then it is appservice bot
                     val stateKey: USER,
@@ -54,10 +50,8 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
 
             public sealed interface User<USER : Any> : Remote<USER, Nothing, Nothing> {
                 public val userId: USER
-                public val eventId: RemoteEventId
 
                 public data class Create<USER : Any>(
-                    override val eventId: RemoteEventId,
                     val userData: RemoteUser<USER>
                 ) : User<USER> {
                     override val userId: USER by userData::id
