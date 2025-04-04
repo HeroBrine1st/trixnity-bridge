@@ -49,7 +49,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
     override suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
         roomId: ROOM,
-        event: ClientEvent.RoomEvent<*>
+        event: ClientEvent.RoomEvent<*>,
     ) {
         with(mappingRemoteWorker) {
             handleEvent(actorId, roomId, event)
@@ -93,7 +93,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
 
 
     private suspend fun replicateRemoteUser(
-        userData: RemoteUser<USER>
+        userData: RemoteUser<USER>,
     ): UserId {
         puppetRepository.getPuppetId(userData.id)?.let {
             return@replicateRemoteUser it
@@ -257,11 +257,8 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         val stateKey = puppetRepository.getPuppetId(event.stateKey)!!
         // val sender = if(event.sender == event.stateKey) stateKey else /*fetch*/
 
-        // TODO looks like those have no idempotency
-        // furthermore, MappingRemoteWorker can emit multiple events from one RemoteWorker event
-        // this leads to a requirement of handling "next possible" states idempotency
-        // Currently it is only a pair of invite and join. Probably should be specified in MappingRemoteWorker contract
         when (event.membership) {
+            // probably idempotent
             Membership.JOIN -> client.room.joinRoom(roomId, asUserId = stateKey).getOrThrow()
 
             // spec says it is only join where stateKey should be equal to sender.
@@ -284,7 +281,15 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 roomId,
                 stateKey,
                 asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
-            ).getOrThrow()
+            ).onFailure {
+                if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
+                    val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
+                    if (stateKey in members) {
+                        logger.warn(it) { "Tried to invite already joined user $stateKey to $roomId, ignoring" }
+                        Unit
+                    } else throw it
+                } else throw it
+            }.getOrThrow()
 
             Membership.BAN -> client.room.banUser(
                 roomId,

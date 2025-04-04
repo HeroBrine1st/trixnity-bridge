@@ -34,7 +34,16 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                     override val roomId: ROOM by roomData::id
                 }
 
-                // Represents state machine fields from https://spec.matrix.org/latest/client-server-api/#mroommember
+                /**
+                 * This event represents state machine fields from [m.room.member](https://spec.matrix.org/latest/client-server-api/#mroommember)
+                 *
+                 * The [MappingRemoteWorker] MUST NOT emit multiple membership events in one transaction (defined by worker)
+                 * except in these cases:
+                 * - Invite followed by join
+                 *
+                 * In other cases [MappingRemoteWorker] MUST NOT emit next [Room.Membership] event without
+                 * ensuring it won't emit previous [Room.Membership] event again. **Violating this contract leads to unspecified behavior**.
+                 */
                 public data class Membership<USER : Any, ROOM : Any>(
                     override val roomId: ROOM,
                     // ignored on JOIN and KNOCK
