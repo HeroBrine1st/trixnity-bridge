@@ -24,22 +24,18 @@ import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Message
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
-import ru.herobrine1st.matrix.bridge.repository.*
+import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
+import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
 
 public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
     private val mappingRemoteWorker: MappingRemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
+    private val puppetRepository: PuppetRepository<USER>,
+    private val roomRepository: RoomRepository<ACTOR, ROOM>,
     idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
     bridgeConfig: BridgeConfig,
-    repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>
 ) : ProvisioningRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
-    private val actorRepository: ActorRepository<ACTOR> = repositorySet.actorRepository
-    private val messageRepository: MessageRepository<MESSAGE> = repositorySet.messageRepository
-    private val puppetRepository: PuppetRepository<USER> = repositorySet.puppetRepository
-    private val roomRepository: RoomRepository<ACTOR, ROOM> = repositorySet.roomRepository
-    private val transactionRepository: TransactionRepository = repositorySet.transactionRepository
-
     private val appServiceBotId: UserId = UserId(bridgeConfig.botLocalpart, bridgeConfig.homeserverDomain)
     private val puppetPrefix = bridgeConfig.puppetPrefix
     private val roomAliasPrefix = bridgeConfig.roomAliasPrefix
