@@ -72,22 +72,17 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     }
                     // TODO update event
                     is MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM> -> handleMembershipEvent(event)
-                    is MappingRemoteWorker.Event.Remote.Room.Message<USER, ROOM, MESSAGE> -> {
-                        emit(Message(event.messageData))
-                    }
+                    is MappingRemoteWorker.Event.Remote.Room.Message<USER, ROOM, MESSAGE> -> emit(Message(event.messageData))
                 }
 
                 is MappingRemoteWorker.Event.Remote.User -> when (event) {
-                    is MappingRemoteWorker.Event.Remote.User.Create<USER> -> {
-                        val userId = replicateRemoteUser(event.userData)
-                        emit(
-                            ProvisioningRemoteWorker.Event.Remote.User.Create(
-                                userId,
-                                event.userId,
-                                event.eventId
-                            )
+                    is MappingRemoteWorker.Event.Remote.User.Create<USER> -> emit(
+                        ProvisioningRemoteWorker.Event.Remote.User.Create(
+                            mxUserId = replicateRemoteUser(event.userData),
+                            event.userId,
+                            event.eventId
                         )
-                    }
+                    )
                     // TODO update event
                 }
 
@@ -145,19 +140,10 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             return it
         }
 
-        // Create room from scratch
         logger.trace { "Replicating remote room $roomData" }
 
-//        val correspondingLocalUser = actorRepository.getLocalUserIdForActor(actorId)
-//        require(correspondingLocalUser != invitePuppet) { "User $invitePuppet is used both as local user and as a puppet, this will lead to undefined behavior!" }
-//        if (roomData.directData != null && correspondingLocalUser == null) {
-//            logger.warn { "Found direct room $roomData but actor $actorId has no local user, is it intended?" }
-//        }
 
         val displayName = roomData.displayName
-//
-//        if (displayName != null && roomData.directData != null)
-//            logger.warn { "Room $roomData is direct but has display name. Is it intended?" }
 
         // Alias overrides room name generation via heroes and should be avoided
         // TODO implement human-like flow (i.e. store that room with members <...>
@@ -176,7 +162,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             //      (e.g. allow anyone to bridge any room of choice)
             // I think the best method is to get an admin for the replicated room
             // This bridge can be aware of that via e.g. registration - you simply write the bot about the account on the other side and verify that via code there.
-            // When lower layer can add admin data, we fetch the pair here and voi la.
+            // Then lower layer can add admin data, we fetch the pair here and voi la.
             // This has a number of limitations:
             // - some direct rooms do not have an admin (e.g. 1-1 chats if this bridge is personal). This can be emulated via "everyone is admin", which will invite the real matrix user as well as add admin rights to the other peer
             invite = (roomData.directData?.members?.mapTo(mutableSetOf()) {
@@ -184,7 +170,6 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 puppetRepository.getPuppetId(it)!!
             } ?: emptySet()) + appServiceBotId - creator,
             initialState = listOf(
-                // this "direct" room can have up to 4 members (actual user, actual puppet, sender for "sent successfully" via read marks and puppet of actual user for synchronisation cases)
                 InitialStateEvent(
                     content = ServiceMembersEventContent(
                         serviceMembers = listOf(appServiceBotId)
