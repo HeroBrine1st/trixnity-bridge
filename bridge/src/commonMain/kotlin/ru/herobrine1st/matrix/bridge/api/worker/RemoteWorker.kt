@@ -95,7 +95,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * @param id Room to fetch
      * @return Fresh [ru.herobrine1st.matrix.bridge.api.RemoteRoom] data instance
      */
-    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<ROOM, USER>
+    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<USER, ROOM>
 
     /**
      * This method provides a [Flow] of remote users in remote room, denoted by [remoteId].
@@ -154,14 +154,9 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                  */
                 public val roomId: ROOM
 
-                /**
-                 * A unique id of this event. Value should be unique among all events from the same side.
-                 */
-                public val eventId: RemoteEventId
-
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
                     override val roomId: ROOM,
-                    override val eventId: RemoteEventId,
+                    val eventId: RemoteEventId,
                     val sender: USER,
                     val content: MessageEventContent,
                     /**
@@ -176,14 +171,13 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
 
                 public data class Create<USER : Any, ROOM : Any, MESSAGE : Any>(
                     override val roomId: ROOM,
-                    override val eventId: RemoteEventId,
-                    override val roomData: RemoteRoom<ROOM, USER>? = null,
-                ) : Room<USER, ROOM, MESSAGE>, RoomDataHolder<ROOM, USER>
+                    override val roomData: RemoteRoom<USER, ROOM>? = null,
+                ) : Room<USER, ROOM, MESSAGE>, RoomDataHolder<USER, ROOM>
 
                 public data class Membership<USER : Any, ROOM : Any, MESSAGE : Any>(
                     override val roomId: ROOM,
-                    override val eventId: RemoteEventId,
-                    val userId: USER,
+                    val sender: USER?,
+                    val stateKey: USER,
                     val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
                     override val userData: RemoteUser<USER>? = null,
                 ) : Room<USER, ROOM, MESSAGE>, UserDataHolder<USER>

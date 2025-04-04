@@ -8,4 +8,6 @@ import kotlin.jvm.JvmInline
  * @param value opaque id of an event. This value MUST be unique for each event and SHOULD be the same for the same event.
  */
 @JvmInline
-public value class RemoteEventId(public val value: String)
+public value class RemoteEventId(public val value: String) {
+    public fun append(suffix: String): RemoteEventId = RemoteEventId("${value}_$suffix")
+}
