@@ -16,6 +16,7 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.InitialStateEvent
 import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
 import net.folivo.trixnity.core.model.events.m.room.Membership
+import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
 import ru.herobrine1st.matrix.bridge.api.RemoteRoom
@@ -177,7 +178,9 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     stateKey = ""
                 )
             ),
-            // TODO powerLevelContentOverride = , for appServiceBotId
+            powerLevelContentOverride = PowerLevelsEventContent(users = buildMap {
+                if (creator != appServiceBotId) set(appServiceBotId, 100L)
+            }),
             preset = CreateRoom.Request.Preset.PRIVATE,
             isDirect = roomData.directData != null,
             asUserId = creator
