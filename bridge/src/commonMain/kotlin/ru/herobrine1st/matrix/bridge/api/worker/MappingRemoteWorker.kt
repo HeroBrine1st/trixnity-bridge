@@ -37,7 +37,15 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                     override val roomId: ROOM by roomData::id
                 }
 
-                // TODO membership
+                // Represents state machine fields from https://spec.matrix.org/latest/client-server-api/#mroommember
+                public data class Membership<USER : Any, ROOM : Any>(
+                    override val roomId: ROOM,
+                    override val eventId: RemoteEventId,
+                    // ignored on JOIN and KNOCK
+                    val sender: USER?, // if null and [membership] allows for sender other than stateKey (e.g. invite by someone else) then it is appservice bot
+                    val stateKey: USER,
+                    val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
+                ) : Room<USER, ROOM, Nothing>
 
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
                     val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
