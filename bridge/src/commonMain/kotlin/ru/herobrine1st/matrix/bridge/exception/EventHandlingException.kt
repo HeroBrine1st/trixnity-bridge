@@ -1,7 +1,7 @@
 package ru.herobrine1st.matrix.bridge.exception
 
 /**
- * Generic exception for application-level errors in handling matrix events by [ru.herobrine1st.matrix.bridge.api.RemoteWorker].
+ * Generic exception for application-level errors in handling matrix events by [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker].
  *
  * Application-level errors do not block bridge from working, e.g.:
  * - Too big message - this error is specific to one event, and it does make sense to skip it
