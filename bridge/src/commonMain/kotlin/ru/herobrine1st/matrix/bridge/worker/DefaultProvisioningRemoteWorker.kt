@@ -65,8 +65,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                         emit(
                             ProvisioningRemoteWorker.Event.Remote.Room.Create(
                                 roomId,
-                                event.roomId,
-                                event.eventId
+                                event.roomId
                             )
                         )
                         clearRoomIdempotencyMarker(roomId)
@@ -80,8 +79,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     is MappingRemoteWorker.Event.Remote.User.Create<USER> -> emit(
                         ProvisioningRemoteWorker.Event.Remote.User.Create(
                             mxUserId = replicateRemoteUser(event.userData),
-                            event.userId,
-                            event.eventId
+                            event.userId
                         )
                     )
                     // TODO update event
