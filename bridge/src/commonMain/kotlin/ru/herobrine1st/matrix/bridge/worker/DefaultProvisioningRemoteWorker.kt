@@ -50,7 +50,9 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         roomId: ROOM,
         event: ClientEvent.RoomEvent<*>
     ) {
-        TODO("Not yet implemented")
+        with(mappingRemoteWorker) {
+            handleEvent(actorId, roomId, event)
+        }
     }
 
     override fun getEvents(actorId: ACTOR): Flow<ProvisioningRemoteWorker.Event<USER, ROOM, MESSAGE>> =
