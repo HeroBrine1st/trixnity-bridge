@@ -3,7 +3,7 @@ package ru.herobrine1st.matrix.bridge.repository
 import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.RemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 
 public interface ActorRepository<ACTOR : Any> {

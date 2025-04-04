@@ -21,7 +21,11 @@ import net.folivo.trixnity.core.model.events.m.RelatesTo
 import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
 import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
 import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
-import ru.herobrine1st.matrix.bridge.api.*
+import ru.herobrine1st.matrix.bridge.api.ErrorNotifier
+import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
+import ru.herobrine1st.matrix.bridge.api.RemoteUser
+import ru.herobrine1st.matrix.bridge.api.RemoteWorkerFactory
+import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
@@ -210,7 +214,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 }
                     .retryWhen { cause, attempt ->
                         if (attempt == 0L) {
-                            emit(WorkerEvent.Disconnected(cause.toString()))
+                            emit(RemoteWorker.Event.Disconnected(cause.toString()))
                         }
                         errorNotifier.notify("An error occurred in RemoteWorker", cause, true)
                         logger.error(cause) { "An error occurred in RemoteWorker" }
@@ -221,7 +225,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                         true
                     }
                     .onEach {
-                        if (it is WorkerEvent.FatalFailure) {
+                        if (it is RemoteWorker.Event.FatalFailure) {
                             errorNotifier.notify("Got $it from $actorId", null, false)
                             logger.error { "An irrecoverable error occurred in RemoteWorker: $it" }
                             logger.error { "Stopping subscription now" }
@@ -256,21 +260,21 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
 
     }
 
-    private suspend fun handleWorkerEvent(actorId: ACTOR, event: WorkerEvent<USER, ROOM, MESSAGE>) = try {
+    private suspend fun handleWorkerEvent(actorId: ACTOR, event: RemoteWorker.Event<USER, ROOM, MESSAGE>) = try {
         when (event) {
-            WorkerEvent.Connected -> {}
-            is WorkerEvent.Disconnected -> {}
-            is WorkerEvent.FatalFailure -> {}
-            is WorkerEvent.RemoteEvent -> handleRemoteEvent(actorId, event)
+            RemoteWorker.Event.Connected -> {}
+            is RemoteWorker.Event.Disconnected -> {}
+            is RemoteWorker.Event.FatalFailure -> {}
+            is RemoteWorker.Event.Remote -> handleRemoteEvent(actorId, event)
         }
     } catch (e: NoSuchActorException) {
         logger.warn(e) { "Actor $actorId is not registered but returned an event. Ignoring." }
         errorNotifier.notify("Actor $actorId is not registered but returned an event. Ignoring.", e, false)
     }
 
-    private suspend fun handleRemoteEvent(actorId: ACTOR, remoteEvent: WorkerEvent.RemoteEvent<USER, ROOM, MESSAGE>) {
-        when (val event = remoteEvent.event) {
-            is RoomEvent.MessageEvent -> {
+    private suspend fun handleRemoteEvent(actorId: ACTOR, remoteEvent: RemoteWorker.Event.Remote<USER, ROOM, MESSAGE>) {
+        when (val event = remoteEvent) {
+            is RemoteWorker.Event.Remote.Room.Message -> {
                 val mxPuppetId = replicateRemoteUser(
                     userIdToReplicate = event.sender,
                     actorId = actorId
@@ -307,8 +311,8 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 }
             }
 
-            is RoomEvent.RoomCreation -> TODO()
-            is RoomEvent.RoomMember -> TODO()
+            is RemoteWorker.Event.Remote.Room.Create -> TODO()
+            is RemoteWorker.Event.Remote.Room.Membership -> TODO()
         }
     }
 

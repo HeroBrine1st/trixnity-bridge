@@ -1,7 +1,7 @@
 package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.EventId
-import ru.herobrine1st.matrix.bridge.api.RemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
 
 /**
  * This interface is responsible for managing pairs of [MESSAGE] to [EventId], for usage in message relations.
