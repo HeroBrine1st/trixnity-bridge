@@ -18,9 +18,7 @@ import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.InitialStateEvent
 import net.folivo.trixnity.core.model.events.m.RelatesTo
-import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
-import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
-import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
+import net.folivo.trixnity.core.model.events.m.room.*
 import ru.herobrine1st.matrix.bridge.api.ErrorNotifier
 import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
 import ru.herobrine1st.matrix.bridge.api.RemoteUser
@@ -92,6 +90,15 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
         val handledEvents = transactionRepository.getHandledEventsInTransaction(txnId)
 
         events.forEach { event ->
+            event.content.let { content ->
+                // Join to every invited room
+                if (event !is ClientEvent.RoomEvent.StateEvent) return@let
+                if (event.stateKey != appServiceBotId.toString()) return@let
+                if (content !is MemberEventContent) return@let
+                if (content.membership != Membership.INVITE) return@let
+                client.room.joinRoom(event.roomId, asUserId = appServiceBotId).getOrThrow()
+                return@forEach
+            }
             if (event.sender.isBridgeControlled()) {
                 return@forEach
             }
