@@ -15,6 +15,7 @@ import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.InitialStateEvent
 import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
+import net.folivo.trixnity.core.model.events.m.room.Membership
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
 import ru.herobrine1st.matrix.bridge.api.RemoteRoom
@@ -72,7 +73,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                         clearRoomIdempotencyMarker(roomId)
                     }
                     // TODO update event
-                    // TODO membership event
+                    is MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM> -> handleMembershipEvent(event)
                     is MappingRemoteWorker.Event.Remote.Room.Message<USER, ROOM, MESSAGE> -> {
                         emit(Message(event.messageData))
                     }
@@ -264,5 +265,44 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             reason = "Falling back to automatic join",
             asUserId = mxPuppetId
         ).getOrThrow()
+    }
+
+    private suspend fun handleMembershipEvent(event: MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM>) {
+        // SAFETY: It is guaranteed by MappingRemoteWorker that room and users are already provisioned
+        val roomId = roomRepository.getMxRoom(event.roomId)!!
+        val stateKey = puppetRepository.getPuppetId(event.stateKey)!!
+        when (event.membership) {
+            Membership.JOIN -> client.room.joinRoom(roomId, asUserId = stateKey).getOrThrow()
+
+            // spec says it is only join where stateKey should be equal to sender.
+            // It is not reasonable to allow knocking on behalf of someone else
+            // FIXME find clarification
+            Membership.KNOCK -> client.room.knockRoom(roomId, asUserId = stateKey).getOrThrow()
+
+            Membership.LEAVE if event.sender == event.stateKey -> client.room.leaveRoom(
+                roomId,
+                asUserId = stateKey
+            ).getOrThrow()
+
+            Membership.LEAVE -> client.room.kickUser(
+                roomId,
+                stateKey,
+                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+            ).getOrThrow()
+
+            Membership.INVITE -> {
+                client.room.inviteUser(
+                    roomId,
+                    stateKey,
+                    asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+                ).getOrThrow()
+            }
+
+            Membership.BAN -> client.room.banUser(
+                roomId,
+                stateKey,
+                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+            )
+        }
     }
 }
