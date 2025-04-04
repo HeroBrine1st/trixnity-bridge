@@ -22,7 +22,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * This method is called when an event on matrix side is fired and delivered to application service.
      *
      * This method could be called multiple times with the same [event] in case of network or other failures.
-     * Implementation of this method SHOULD be idempotent. [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.eventId] can be used for that.
+     * Implementation of this method SHOULD be idempotent. [ClientEvent.RoomEvent.id] can be used for that.
      *
      * Implementation MUST dispatch [event] immediately, suspending until it is done. A successful return means that
      * event dispatched successfully, and in most cases it won't be used again in calls to this method.
