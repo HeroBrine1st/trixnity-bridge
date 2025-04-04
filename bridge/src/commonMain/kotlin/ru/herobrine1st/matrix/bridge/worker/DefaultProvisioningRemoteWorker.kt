@@ -257,6 +257,12 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         // SAFETY: It is guaranteed by MappingRemoteWorker that room and users are already provisioned
         val roomId = roomRepository.getMxRoom(event.roomId)!!
         val stateKey = puppetRepository.getPuppetId(event.stateKey)!!
+        // val sender = if(event.sender == event.stateKey) stateKey else /*fetch*/
+
+        // TODO looks like those have no idempotency
+        // furthermore, MappingRemoteWorker can emit multiple events from one RemoteWorker event
+        // this leads to a requirement of handling "next possible" states idempotency
+        // Currently it is only a pair of invite and join. Probably should be specified in MappingRemoteWorker contract
         when (event.membership) {
             Membership.JOIN -> client.room.joinRoom(roomId, asUserId = stateKey).getOrThrow()
 
@@ -276,13 +282,11 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
             ).getOrThrow()
 
-            Membership.INVITE -> {
-                client.room.inviteUser(
-                    roomId,
-                    stateKey,
-                    asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
-                ).getOrThrow()
-            }
+            Membership.INVITE -> client.room.inviteUser(
+                roomId,
+                stateKey,
+                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+            ).getOrThrow()
 
             Membership.BAN -> client.room.banUser(
                 roomId,
