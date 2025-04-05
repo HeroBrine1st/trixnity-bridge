@@ -46,8 +46,17 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                  */
                 public data class Membership<USER : Any, ROOM : Any>(
                     override val roomId: ROOM,
-                    // ignored on JOIN and KNOCK
-                    val sender: USER?, // if null and [membership] allows for sender other than stateKey (e.g. invite by someone else) then it is appservice bot
+                    /**
+                     * The author of the event if [membership] is not JOIN or KNOCK. If null, it is appservice bot.
+                     *
+                     * If [membership] is JOIN or KNOCK, setting this field to something other than [stateKey] or null
+                     * is undefined behavior.
+                     * <!-- That UB is actually used for DRY leading to more safety -->
+                     */
+                    val sender: USER?,
+                    /**
+                     * The user that is being affected by the event. It is also a sender for JOIN and KNOCK.
+                     */
                     val stateKey: USER,
                     val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
                 ) : Room<USER, ROOM, Nothing>
