@@ -6,7 +6,7 @@ import net.folivo.trixnity.core.model.RoomId
  * This repository links remote and local ids of rooms, saving actor ownership and whether a given room is direct.
  * For the purposes of bridging, it is considered to be the same room if a link exists between remote and local room ids.
  *
- * This repository SHOULD ensure relations between [ROOM] and [RoomId] are one-to-one (i.e. by issuing UNIQUE constraint on both columns).
+ * This repository SHOULD ensure relations between [ROOM] and [RoomId] are one-to-one (e.g. by issuing UNIQUE constraint on both columns).
  */
 public interface RoomRepository<ACTOR : Any, ROOM : Any> {
     /**
@@ -29,15 +29,13 @@ public interface RoomRepository<ACTOR : Any, ROOM : Any> {
      * After calling this method, room is considered to be bridged, as it is returned by [getRemoteRoom], [getMxRoom]
      * and optionally considered by [ActorRepository.getActorIdByEvent].
      *
-     * [actorId] and [isDirect] can be ignored if bridge doesn't need it.
+     * [actorId] can be ignored if bridge doesn't need it.
      */
-    public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM, isDirect: Boolean)
+    public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM)
 
     /**
-     * This method returns true if room is bridged. Otherwise, it returns false.
-     *
-     * Most probably it can be replaced by comparing result of [getMxRoom] with null, but explicitly returning boolean
-     * from internal store can be more efficient.
+     * This method returns true if room is bridged. Otherwise, it returns false. This is the same as comparing [getMxRoom]
+     * with null, but can be more efficient.
      *
      * @param id Remote id of room to check
      * @return true if room is bridged, otherwise false.
