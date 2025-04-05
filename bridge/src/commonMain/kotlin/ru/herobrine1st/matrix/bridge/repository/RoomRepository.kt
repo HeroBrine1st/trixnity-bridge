@@ -29,9 +29,9 @@ public interface RoomRepository<ACTOR : Any, ROOM : Any> {
      * After calling this method, room is considered to be bridged, as it is returned by [getRemoteRoom], [getMxRoom]
      * and optionally considered by [ActorRepository.getActorIdByEvent].
      *
-     * [actorId] and [isDirect] can be ignored if bridge doesn't need it.
+     * [actorId] can be ignored if bridge doesn't need it.
      */
-    public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM, isDirect: Boolean)
+    public suspend fun create(actorId: ACTOR, mxId: RoomId, remoteId: ROOM)
 
     /**
      * This method returns true if room is bridged. Otherwise, it returns false. This is the same as comparing [getMxRoom]
