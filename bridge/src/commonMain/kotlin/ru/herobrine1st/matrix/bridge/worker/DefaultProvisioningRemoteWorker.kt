@@ -255,10 +255,14 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         // SAFETY: It is guaranteed by MappingRemoteWorker that room and users are already provisioned
         val roomId = roomRepository.getMxRoom(event.roomId)!!
         val stateKey = puppetRepository.getPuppetId(event.stateKey)!!
-        // val sender = if(event.sender == event.stateKey) stateKey else /*fetch*/
+        val sender = when (event.sender) {
+            event.stateKey -> stateKey
+            // FIXME bot join is asynchronous, this may lead to race condition
+            null -> appServiceBotId
+            else -> puppetRepository.getPuppetId(event.sender)!!
+        }
 
         when (event.membership) {
-            // probably idempotent
             Membership.JOIN -> client.room.joinRoom(roomId, asUserId = stateKey).getOrThrow()
 
             // spec says it is only join where stateKey should be equal to sender.
@@ -274,13 +278,13 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             Membership.LEAVE -> client.room.kickUser(
                 roomId,
                 stateKey,
-                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+                asUserId = sender
             ).getOrThrow()
 
             Membership.INVITE -> client.room.inviteUser(
                 roomId,
                 stateKey,
-                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+                asUserId = sender
             ).onFailure {
                 if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
                     val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
@@ -294,7 +298,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             Membership.BAN -> client.room.banUser(
                 roomId,
                 stateKey,
-                asUserId = event.sender?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+                asUserId = sender
             )
         }
     }
