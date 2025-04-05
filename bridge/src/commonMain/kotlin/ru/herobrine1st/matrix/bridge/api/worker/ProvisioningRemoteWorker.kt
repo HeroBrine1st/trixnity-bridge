@@ -7,6 +7,7 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.IRemoteMessageEventData
 import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
+import ru.herobrine1st.matrix.bridge.api.RemoteWorkerAPI
 
 /**
  * This RemoteWorker has ability to provision entities unknown to the bridge, according to events
@@ -17,6 +18,10 @@ import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
  * - Provisioning rooms/users/user memberships, including updates
  * - Dispatching ID pairs higher (membership info is stored on HS)
  * - Passing through everything else
+ *
+ * This worker MUST ensure all guarantees given by [MappingRemoteWorker], [RemoteWorker], and other possible layers
+ * are satisfied. Those guarantees are safety assumtions and violating them by e.g. replacing [MappingRemoteWorker]
+ * with a custom implementation without proper guarantees is **undefined behavior**.
  */
 public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
@@ -63,6 +68,9 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
                 ) : User<USER>
             }
         }
+    }
 
+    public fun interface Factory<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
+        public fun get(api: RemoteWorkerAPI<USER, ROOM, MESSAGE>): ProvisioningRemoteWorker<ACTOR, USER, ROOM, MESSAGE>
     }
 }

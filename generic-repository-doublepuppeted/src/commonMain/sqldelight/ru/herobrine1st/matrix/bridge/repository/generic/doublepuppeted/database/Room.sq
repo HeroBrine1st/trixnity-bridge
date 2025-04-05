@@ -4,7 +4,6 @@ import net.folivo.trixnity.core.model.RoomId;
 CREATE TABLE room (
   roomId VARCHAR(255) AS RoomId NOT NULL UNIQUE,
   remoteId VARCHAR(4096) NOT NULL UNIQUE,
-  isDirect BOOLEAN NOT NULL,
   actorId INTEGER REFERENCES actor(id) NOT NULL,
   PRIMARY KEY (roomId, remoteId)
 );
@@ -16,8 +15,8 @@ getRoomIdByRemoteId:
 SELECT roomId FROM room WHERE remoteId = ?;
 
 create:
-INSERT INTO room(roomId, remoteId, isDirect, actorId)
-VALUES (?, ?, ?, (SELECT id FROM actor WHERE naturalId = ?));
+INSERT INTO room(roomId, remoteId, actorId)
+VALUES (?, ?, (SELECT id FROM actor WHERE naturalId = ?));
 
 getActorByRoomId:
 SELECT actor.naturalId FROM room

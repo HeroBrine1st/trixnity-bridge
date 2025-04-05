@@ -28,12 +28,10 @@ public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> @PublishedApi internal 
         actorId: ACTOR,
         mxId: RoomId,
         remoteId: ROOM,
-        isDirect: Boolean
     ): Unit = databaseFactory.useDatabase { database ->
         database.roomQueries.create(
             mxId,
             stringFormat.encodeToString(roomIdSerializer, remoteId),
-            isDirect,
             stringFormat.encodeToString(actorIdSerializer, actorId)
         )
     }
