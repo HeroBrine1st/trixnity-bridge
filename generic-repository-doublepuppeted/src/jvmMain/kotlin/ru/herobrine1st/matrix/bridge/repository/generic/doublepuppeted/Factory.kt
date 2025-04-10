@@ -71,6 +71,11 @@ public suspend inline fun <reified ACTOR : Any, reified USER : Any, reified ROOM
     connectionFactory: ConnectionFactory
 ): Pair<RepositorySet<ACTOR, USER, ROOM, MESSAGE>, ActorProvisionRepository<ACTOR, ACTOR_DATA>> =
     createR2DBCRepositorySet<ACTOR, USER, ROOM, MESSAGE, ACTOR_DATA>(
-        serializer(), serializer(), serializer(), serializer(), serializer(),
-        stringFormat, connectionFactory
+        actorIdSerializer = stringFormat.serializersModule.serializer(),
+        puppetIdSerializer = stringFormat.serializersModule.serializer(),
+        roomIdSerializer = stringFormat.serializersModule.serializer(),
+        messageIdSerializer = stringFormat.serializersModule.serializer(),
+        actorDataSerializer = stringFormat.serializersModule.serializer(),
+        stringFormat = stringFormat,
+        connectionFactory = connectionFactory
     )
