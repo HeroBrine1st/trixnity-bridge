@@ -46,7 +46,7 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DA
             }
             it.await(null, "UPDATE metadata SET version=$1", 1) {
                 check(this is R2dbcPreparedStatement)
-                bindLong(0, version)
+                bindLong(0, Database.Schema.version)
             }
             it.connection.commitTransaction().awaitCompletion()
         } catch (_: Throwable) {
