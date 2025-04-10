@@ -10,6 +10,10 @@ kotlin {
     jvm()
     linuxX64()
 
+    compilerOptions {
+        freeCompilerArgs.add("-Xwhen-guards")
+    }
+
     sourceSets {
         commonMain.dependencies {
             api(projects.compat)

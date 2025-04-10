@@ -9,3 +9,10 @@
 * Personal bridge - a bridge with support of personal actors. Such bridge allows a person to bridge its own account to
   matrix. Also known as single-puppeted
   bridge [according to old matrix doc](https://matrix.org/docs/older/types-of-bridging/)
+* Provision of user/room - an act of copying the room from remote side to matrix side.
+    * Historic provision - a provision from historically accurate information (e.g. from backfilling or in real time
+      as entity is created on remote side).
+    * Automatic provision - a provision from current state of the entity, usually done due to inability of remote worker
+      to do proper historic provision.  
+      In other words, this means room or user provision when remote worker did not explicitly request that, so room/user
+      is provisioned because otherwise sending event is impossible.
