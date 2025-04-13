@@ -174,7 +174,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                             isAppservice = true
                         ).onSuccess { response ->
                             if (response !is UIA.Success) {
-                                logger.error { "Couldn't create $appServiceBotId bot due to UIA error" }
+                                logger.error { "Couldn't create $appServiceBotId bot due to UIA error: $response" }
                                 // Do not return, block application instead
                             } else {
                                 logger.info { "Created $appServiceBotId bot" }
