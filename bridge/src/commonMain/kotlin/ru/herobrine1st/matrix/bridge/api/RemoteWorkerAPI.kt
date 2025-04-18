@@ -8,7 +8,7 @@ public interface RemoteWorkerAPI<USER, ROOM, MESSAGE> {
     /**
      * Provides a way to get internal mapping of event IDs.
      *
-     * @param id The same value as was previously used in [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.Message.messageId]
+     * @param id The same value as was previously used in [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker.Event.Remote.Room.Message.messageId]
      * @return [EventId] of the same event on local side, or null if there's no record
      */
     public suspend fun getMessageEventId(id: MESSAGE): EventId?

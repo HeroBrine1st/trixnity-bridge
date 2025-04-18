@@ -19,7 +19,7 @@ import ru.herobrine1st.matrix.bridge.api.RemoteWorkerAPI
  * - Dispatching ID pairs higher (membership info is stored on HS)
  * - Passing through everything else
  *
- * This worker MUST ensure all guarantees given by [MappingRemoteWorker], [RemoteWorker], and other possible layers
+ * This worker MUST ensure all guarantees given by [MappingRemoteWorker], [BasicRemoteWorker], and other possible layers
  * are satisfied. Those guarantees are safety assumtions and violating them by e.g. replacing [MappingRemoteWorker]
  * with a custom implementation without proper guarantees is **undefined behavior**.
  */

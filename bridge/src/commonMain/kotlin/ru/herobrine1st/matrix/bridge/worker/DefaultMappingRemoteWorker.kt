@@ -9,14 +9,14 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.m.room.Membership
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
+import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
-import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
 import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
 import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 
 public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
-    private val remoteWorker: RemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
+    private val remoteWorker: BasicRemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
     private val roomRepository: RoomRepository<ACTOR, ROOM>,
     private val puppetRepository: PuppetRepository<USER>,
 ) : MappingRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
@@ -35,18 +35,18 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
     override fun getEvents(actorId: ACTOR): Flow<MappingRemoteWorker.Event<USER, ROOM, MESSAGE>> =
         remoteWorker.getEvents(actorId).transform { event ->
             when (event) {
-                RemoteWorker.Event.Connected -> emit(MappingRemoteWorker.Event.Connected)
-                is RemoteWorker.Event.Disconnected -> emit(MappingRemoteWorker.Event.Disconnected(event.reason))
-                is RemoteWorker.Event.FatalFailure -> emit(MappingRemoteWorker.Event.FatalFailure(event.reason))
-                is RemoteWorker.Event.Remote -> when (event) {
-                    is RemoteWorker.Event.Remote.Room.Create -> emit(
+                BasicRemoteWorker.Event.Connected -> emit(MappingRemoteWorker.Event.Connected)
+                is BasicRemoteWorker.Event.Disconnected -> emit(MappingRemoteWorker.Event.Disconnected(event.reason))
+                is BasicRemoteWorker.Event.FatalFailure -> emit(MappingRemoteWorker.Event.FatalFailure(event.reason))
+                is BasicRemoteWorker.Event.Remote -> when (event) {
+                    is BasicRemoteWorker.Event.Remote.Room.Create -> emit(
                         MappingRemoteWorker.Event.Remote.Room.Create(
                             roomData = event.roomData ?: remoteWorker.getRoom(actorId, event.roomId)
                                 .also { check(it.id == event.roomId) }
                         )
                     )
 
-                    is RemoteWorker.Event.Remote.Room.Membership -> {
+                    is BasicRemoteWorker.Event.Remote.Room.Membership -> {
                         ensureRoomExists(actorId, event)
                         ensureUserExists(actorId, event.stateKey)
                         event.sender?.let {
@@ -62,7 +62,7 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                         )
                     }
 
-                    is RemoteWorker.Event.Remote.Room.Message -> {
+                    is BasicRemoteWorker.Event.Remote.Room.Message -> {
                         ensureRoomExists(actorId, event)
                         ensureUserExists(actorId, event.sender)
                         ensureUserJoined(event.roomId, event.sender)
@@ -85,7 +85,7 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
 
     private suspend fun FlowCollector<MappingRemoteWorker.Event<USER, ROOM, MESSAGE>>.ensureRoomExists(
         actorId: ACTOR,
-        event: RemoteWorker.Event.Remote.Room<USER, ROOM, MESSAGE>,
+        event: BasicRemoteWorker.Event.Remote.Room<USER, ROOM, MESSAGE>,
     ) {
         if (!roomRepository.isRoomBridged(event.roomId)) {
             logger.debug { "Emitting automatic room ${event.roomId} provision request" }

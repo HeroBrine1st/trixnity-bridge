@@ -3,7 +3,7 @@ package ru.herobrine1st.matrix.bridge.repository
 import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
-import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
 import ru.herobrine1st.matrix.bridge.exception.NoSuchActorException
 
 public interface ActorRepository<ACTOR : Any> {
@@ -22,17 +22,17 @@ public interface ActorRepository<ACTOR : Any> {
      *
      * For personal bridges it is recommended to use [ClientEvent.RoomEvent.sender] with backing storage saving "ownership" of users to actors.
      * For general bridges [ClientEvent.RoomEvent.roomId] can be used with backing storage saving "ownership" of rooms to actors.
-     * More sophisticated algorithms can be used, however, those two are extremely common.
+     * More sophisticated algorithms can be used; however, those two are extremely common.
      *
-     * @return Actor ID that will be passed to [RemoteWorker] as recommended actor to use, or null if event is not to be processed.
-     * @see [RemoteWorker.handleEvent]
+     * @return Actor ID that will be passed to remote worker as recommended actor to use, or null if event is not to be processed.
+     * @see [BasicRemoteWorker.handleEvent]
      */
     public suspend fun getActorIdByEvent(event: ClientEvent.RoomEvent<*>): ACTOR?
 
     /**
-     * This method returns a puppet of actor account on remote side if it is created.
+     * This method returns a puppet of actor account on the remote side if it is created.
      *
-     * Actor account is the remote account that [RemoteWorker] uses to act on remote network.
+     * Actor account is the remote account that remote worker uses to act on remote network.
      *
      * This bridge has ability to replicate events emitted from actor but bypassed the bridge
      * (e.g. when you manually go to remote network and send messages from account connected to bridge).
@@ -46,7 +46,7 @@ public interface ActorRepository<ACTOR : Any> {
      * though functionality will be degraded.
      *
      * If this method returns null and actor account puppet is already created, it implies that puppet is not a
-     * service member as per MSC4171. This allows to return null if MSC4171 is not needed for [actorId].
+     * service member as per MSC4171. This allows returning null if MSC4171 is not needed for [actorId].
      *
      * @param actorId the ID of the actor's to find the corresponding [UserId] for.
      * @return [UserId] of corresponding puppet from database. This is different to [getLocalUserIdForActor] as returned
@@ -59,7 +59,7 @@ public interface ActorRepository<ACTOR : Any> {
     /**
      * This method provides bridge with the information about currently available workers.
      *
-     * If new actor is emerged, it will be automatically subscribed to via [RemoteWorker.getEvents]
+     * If new actor is emerged, it will be automatically subscribed to via [BasicRemoteWorker.getEvents]
      * If actor is removed, subscription will be automatically terminated. RemoteWorker SHOULD NOT try to complete it itself,
      * but it is possible to return FatalFailure in case of authentication revocation or other internal bridge failures due to
      * account removal.

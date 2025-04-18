@@ -17,7 +17,7 @@ import ru.herobrine1st.matrix.bridge.api.value.RemoteEventId
  * @param ROOM - exact type of remote room ID
  * @param MESSAGE - exact type of remote message ID
  */
-public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
+public interface BasicRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
     /**
      * This method is called when an event on matrix side is fired and delivered to application service.
      *
@@ -72,7 +72,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * (e.g. Cache-Control header) or fetched fully from it. If implementation does know about changes immediately and
      * no query is required, it may be useful to use [ru.herobrine1st.matrix.bridge.api.UserDataHolder.userData] field in supported events.
      *
-     * This method is called in response to [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.Membership] event with [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.Membership.userData]
+     * This method is called in response to [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker.Event.Remote.Room.Membership] event with [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker.Event.Remote.Room.Membership.userData]
      * field set to null (the default).
      *
      * @param actorId actor that is recommended to use while fetching remote user
@@ -88,7 +88,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      * (e.g. Cache-Control header) or fetched fully from it. If implementation does know about changes immediately and
      * no query is required, it may be useful to use [ru.herobrine1st.matrix.bridge.api.RoomDataHolder.roomData] field in supported events.
      *
-     * This method is called in response to [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.Create] event with [ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker.Event.Remote.Room.Create.roomData]
+     * This method is called in response to [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker.Event.Remote.Room.Create] event with [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker.Event.Remote.Room.Create.roomData]
      * field set to null (the default).
      *
      * @param actorId actor that is recommended to use while fetching remote room
@@ -105,7 +105,7 @@ public interface RemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
      *
      * [Flow] gives ability to use pagination, but it is up to implementation how to fetch users from remote room. This method
      * can return remote user data in [RemoteUser] class to avoid additional [getUser] request or set it to null,
-     * at [RemoteWorker] discretion. In the latter case, if puppet is not created yet, [getUser] is called to get user data.
+     * at [BasicRemoteWorker] discretion. In the latter case, if puppet is not created yet, [getUser] is called to get user data.
      * Generally this method should not return user data, but if it is cheap to get user data in bulk,
      * it is an efficient optimisation to return this data here. The returned data SHOULD be fresh as defined by [getUser].
      * [RemoteUser.id] MUST be the same as first value of a pair.
