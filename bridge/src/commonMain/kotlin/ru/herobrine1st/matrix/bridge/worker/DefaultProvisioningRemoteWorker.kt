@@ -153,18 +153,10 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         val roomId = client.room.createRoom(
             name = displayName,
             roomAliasId = alias, // idempotency via stable alias
-
-            // TODO add a way to provide actor admin here, but it should be done in a way that allows delegation
-            //      (e.g. allow anyone to bridge any room of choice)
-            // I think the best method is to get an admin for the replicated room
-            // This bridge can be aware of that via e.g. registration - you simply write the bot about the account on the other side and verify that via code there.
-            // Then lower layer can add admin data, we fetch the pair here and voi la.
-            // This has a number of limitations:
-            // - some direct rooms do not have an admin (e.g. 1-1 chats if this bridge is personal). This can be emulated via "everyone is admin", which will invite the real matrix user as well as add admin rights to the other peer
             invite = (roomData.directData?.members?.mapTo(mutableSetOf()) {
                 // SAFETY: It is guaranteed by MappingRemoteWorker that all members are already provisioned
                 puppetRepository.getPuppetId(it)!!
-            } ?: emptySet()) + appServiceBotId - creator,
+            } ?: emptySet()) + appServiceBotId - creator + roomData.realMembers,
             initialState = listOf(
                 InitialStateEvent(
                     content = ServiceMembersEventContent(

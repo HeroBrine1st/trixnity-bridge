@@ -1,11 +1,13 @@
 package ru.herobrine1st.matrix.bridge.api
 
+import net.folivo.trixnity.core.model.UserId
+
 /**
  * This data class contains information on a room at the moment of creation.
  *
  * There are two cases:
- * - Automatic provision: as events are not backfilled, moment of creation is the moment of provision and so this contains actual data
- * - Historic provision: as events, including all state changes, are backfilled, this contains state of the room
+ * - Automatic provision: as events are not backfilled, the moment of creation is the moment of provision and so this contains actual data
+ * - Historic provision: as events, including all state changes, are backfilled, this contains the state of the room
  *   just after the room creation. The room is brought up to actual state by backfilling.
  */
 public data class RemoteRoom<USER : Any, ROOM : Any>(
@@ -19,6 +21,16 @@ public data class RemoteRoom<USER : Any, ROOM : Any>(
      */
     val creator: USER? = null,
     val directData: DirectData<USER>?,
+    /**
+     * This collection is used to invite the real user to room.
+     *
+     * There usually are two cases:
+     *
+     * - Double-puppeted bridge: room bridging is ordered by room admin (or actor admin), which means
+     * that admin should be invited to matrix room so that it is known to the world.
+     * - Personal bridge: room bridging is triggered by DM or invite to a new room and the owner of actor account should be invited.
+     */
+    val realMembers: Set<UserId>,
     // TODO
 ) {
     @Deprecated("Deprecated", replaceWith = ReplaceWith("directData != null"))
