@@ -1,6 +1,7 @@
 package ru.herobrine1st.matrix.bridge.api.worker
 
 import kotlinx.coroutines.flow.Flow
+import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.MessageEventContent
 import ru.herobrine1st.matrix.bridge.api.*
@@ -181,6 +182,16 @@ public interface BasicRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE 
                     val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
                     override val userData: RemoteUser<USER>? = null,
                 ) : Room<USER, ROOM, MESSAGE>, UserDataHolder<USER>
+
+                /**
+                 * @see MappingRemoteWorker.Event.Remote.Room.RealUserMembership
+                 */
+                public data class RealUserMembership<USER : Any, ROOM : Any>(
+                    override val roomId: ROOM,
+                    val sender: USER?,
+                    val stateKey: UserId,
+                    val membership: MappingRemoteWorker.Event.Remote.Room.RealUserMembership.RestrictedMembership,
+                ) : Room<USER, ROOM, Nothing>
             }
         }
     }
