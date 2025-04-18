@@ -59,6 +59,13 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                      */
                     val stateKey: USER,
                     val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
+                    /**
+                     * If true and [membership] is INVITE, uses [MSC4171: Service members](https://github.com/matrix-org/matrix-spec-proposals/pull/4171)
+                     * on [stateKey].
+                     *
+                     * This is relevant to personal bridges handling bridge bypasses
+                     */
+                    val asServiceMember: Boolean = false,
                 ) : Room<USER, ROOM, Nothing>
 
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
