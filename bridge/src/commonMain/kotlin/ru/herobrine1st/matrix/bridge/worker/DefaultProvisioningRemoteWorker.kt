@@ -251,6 +251,22 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             else -> puppetRepository.getPuppetId(event.sender)!!
         }
 
+        if (event.membership == Membership.INVITE && event.asServiceMember) {
+            client.room.getStateEvent<ServiceMembersEventContent>(roomId)
+                .recover {
+                    if (it is MatrixServerException && it.errorResponse == ErrorResponse.NotFound)
+                        ServiceMembersEventContent(emptyList())
+                    else throw it
+                }
+                .map { it.copy(serviceMembers = it.serviceMembers + stateKey) }
+                .getOrThrow()
+                .let {
+                    // most probably sender is appServiceBotId, because this is a response to bridge bypass
+                    client.room.sendStateEvent(roomId, it, asUserId = sender)
+                }
+                .getOrThrow()
+        }
+
         when (event.membership) {
             Membership.JOIN -> client.room.joinRoom(roomId, asUserId = stateKey).getOrThrow()
 
