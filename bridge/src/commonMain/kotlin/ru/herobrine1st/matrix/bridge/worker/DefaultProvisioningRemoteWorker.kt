@@ -22,7 +22,9 @@ import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
 import ru.herobrine1st.matrix.bridge.api.RemoteRoom
 import ru.herobrine1st.matrix.bridge.api.RemoteUser
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker.Event.Remote.Room.RealUserMembership.RestrictedMembership
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Create
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Message
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
@@ -63,7 +65,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     is MappingRemoteWorker.Event.Remote.Room.Create<USER, ROOM> -> {
                         val roomId = replicateRemoteRoom(event.roomData)
                         emit(
-                            ProvisioningRemoteWorker.Event.Remote.Room.Create(
+                            Create(
                                 roomId,
                                 event.roomId
                             )
@@ -73,6 +75,8 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     // TODO update event
                     is MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM> -> handleMembershipEvent(event)
                     is MappingRemoteWorker.Event.Remote.Room.Message<USER, ROOM, MESSAGE> -> emit(Message(event.messageData))
+                    is MappingRemoteWorker.Event.Remote.Room.RealUserMembership<USER, ROOM> ->
+                        handleRealUserMembership(event)
                 }
 
                 is MappingRemoteWorker.Event.Remote.User -> when (event) {
@@ -305,6 +309,56 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 stateKey,
                 asUserId = sender
             )
+        }
+    }
+
+    private suspend fun handleRealUserMembership(event: MappingRemoteWorker.Event.Remote.Room.RealUserMembership<USER, ROOM>) {
+        val roomId = roomRepository.getMxRoom(event.roomId)!!
+        val stateKey = event.stateKey
+        val sender = when (event.sender) {
+            null -> appServiceBotId
+            else -> puppetRepository.getPuppetId(event.sender)!!
+        }
+        // TODO in future we'll have a direct reference to AppServiceWorker here (due to migration from getEventsFlow to AppServiceWorker.handleRemoteEvent)
+        //      this will allow to use its `isBridgeControlled` method
+        check(stateKey != sender) { "RealUserMembership is intended to be used on real users, not puppets!" }
+
+        when (event.membership) {
+            RestrictedMembership.LEAVE -> client.room.kickUser(
+                roomId,
+                stateKey,
+                asUserId = sender
+            ).recover {
+                if (it is MatrixServerException && it.errorResponse == ErrorResponse.Forbidden) {
+                    // We don't know why it is forbidden. Let's see the one exact case: the user is already left.
+                    // The reason is that we don't control it, so this will trigger and not once.
+                    val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
+                    if (stateKey !in members) {
+                        logger.warn(it) { "Tried to kick already left user $stateKey from $roomId, ignoring" }
+                    } else throw it
+                }
+            }
+                .getOrThrow()
+
+            RestrictedMembership.INVITE -> client.room.inviteUser(
+                roomId,
+                stateKey,
+                asUserId = sender
+            ).onFailure {
+                if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
+                    val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
+                    if (stateKey in members) {
+                        logger.warn(it) { "Tried to invite already joined user $stateKey to $roomId, ignoring" }
+                        Unit
+                    } else throw it
+                } else throw it
+            }.getOrThrow()
+
+            RestrictedMembership.BAN -> client.room.banUser(
+                roomId,
+                stateKey,
+                asUserId = sender
+            ).getOrThrow()
         }
     }
 }
