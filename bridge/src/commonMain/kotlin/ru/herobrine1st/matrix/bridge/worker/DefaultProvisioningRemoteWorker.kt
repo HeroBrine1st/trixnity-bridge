@@ -120,12 +120,9 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             } else throw it
         }.getOrThrow()
 
-        // Initialize this replica before sending to database for recovery purposes
-        val remoteUserData = userData
-
         client.user.setDisplayName(
             puppetId,
-            displayName = remoteUserData.displayName,
+            displayName = userData.displayName,
             asUserId = puppetId
         ).getOrThrow()
 
