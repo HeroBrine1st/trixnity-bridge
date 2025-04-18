@@ -25,7 +25,6 @@ public interface RemoteWorkerAPI<USER, ROOM, MESSAGE> {
      * @param id remote ID of puppet
      * @return matrix ID of the same puppet or null if not found
      */
-    // TODO replicate if there's no such user
     public suspend fun getPuppetId(id: USER): UserId?
 
     /**
