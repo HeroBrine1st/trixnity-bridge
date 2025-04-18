@@ -1,6 +1,7 @@
 package ru.herobrine1st.matrix.bridge.api.worker
 
 import kotlinx.coroutines.flow.Flow
+import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.*
 
@@ -71,6 +72,36 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
                     val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
                 ) : Room<USER, ROOM, MESSAGE>, IRemoteMessageEventData<USER, ROOM, MESSAGE> by messageData
+
+                /**
+                 * This is initially intended for personal bridges to be fired in case an actor account is invited,
+                 * kicked or (un)banned. However, its possible usage is not limited to personal bridges and those specific cases.
+                 *
+                 * Please consider [RemoteRoom.realMembers] if you simply need to add a room admin or owner of actor account.
+                 *
+                 * The contract is the same as in [Membership]: remote worker MUST NOT send next
+                 * [Room.RealUserMembership] event without ensuring it won't send previous event. The exception
+                 * can not be applied here as join is not available. **Violating this contract leads to unspecified behavior**.
+                 */
+                // [ProvisioningRemoteWorker] implementation hint: user can join while [MappingRemoteWorker]
+                // recovers from failure. Handling error after inviting joined user is mandatory.
+                public data class RealUserMembership<USER : Any, ROOM : Any>(
+                    override val roomId: ROOM,
+                    val sender: USER?,
+                    /**
+                     * A UserId of a real user. This MUST NOT specify bridge-controlled user.
+                     */
+                    val stateKey: UserId,
+                    val membership: RestrictedMembership,
+                ) : Room<USER, ROOM, Nothing> {
+
+                    // Can't knock or join on behalf of a real user
+                    public enum class RestrictedMembership {
+                        INVITE,
+                        LEAVE,
+                        BAN
+                    }
+                }
             }
 
             public sealed interface User<USER : Any> : Remote<USER, Nothing, Nothing> {
