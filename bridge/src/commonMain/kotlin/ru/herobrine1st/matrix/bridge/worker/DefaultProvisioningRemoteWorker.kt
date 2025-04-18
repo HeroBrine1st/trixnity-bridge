@@ -308,7 +308,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 roomId,
                 stateKey,
                 asUserId = sender
-            )
+            ).getOrThrow()
         }
     }
 
