@@ -1,7 +1,7 @@
 package ru.herobrine1st.matrix.bridge.repository
 
 import net.folivo.trixnity.core.model.EventId
-import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
 
 /**
  * This interface is responsible for managing pairs of [MESSAGE] to [EventId], for usage in message relations.
@@ -10,7 +10,7 @@ import ru.herobrine1st.matrix.bridge.api.worker.RemoteWorker
  */
 public interface MessageRepository<MESSAGE : Any> {
     /**
-     * This method registers pair [remoteMessageId]<->[mxEventId]. This can be used later by [RemoteWorker] to reference events on both sides.
+     * This method registers pair [remoteMessageId]<->[mxEventId]. This can be used later by [BasicRemoteWorker] to reference events on both sides.
      *
      * This method MUST be idempotent.
      */
