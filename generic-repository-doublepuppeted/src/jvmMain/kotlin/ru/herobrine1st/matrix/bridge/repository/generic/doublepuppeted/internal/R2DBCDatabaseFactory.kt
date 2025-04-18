@@ -15,6 +15,7 @@ internal class R2DBCDatabaseFactory(
                 messageAdapter = Message.Adapter(EventIdAdapter),
                 puppetAdapter = Puppet.Adapter(UserIdAdapter),
                 roomAdapter = Room.Adapter(RoomIdAdapter),
+                userMappingAdapter = UserMapping.Adapter(UserIdAdapter)
             )
             return block(database)
         }

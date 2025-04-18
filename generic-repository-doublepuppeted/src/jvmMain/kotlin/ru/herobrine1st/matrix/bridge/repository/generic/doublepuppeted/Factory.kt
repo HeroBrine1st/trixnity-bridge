@@ -11,7 +11,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import ru.herobrine1st.matrix.bridge.repository.RepositorySet
+import ru.herobrine1st.matrix.bridge.repository.AppServiceWorkerRepositorySet
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.database.Database
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.R2DBCDatabaseFactory
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.awaitCompletion
@@ -27,8 +27,8 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DA
     messageIdSerializer: KSerializer<MESSAGE>,
     actorDataSerializer: KSerializer<ACTOR_DATA>,
     stringFormat: StringFormat = Json.Default,
-    connectionFactory: ConnectionFactory
-): Pair<RepositorySet<ACTOR, USER, ROOM, MESSAGE>, ActorProvisionRepository<ACTOR, ACTOR_DATA>> {
+    connectionFactory: ConnectionFactory,
+): Pair<AppServiceWorkerRepositorySet<ACTOR, USER, ROOM, MESSAGE>, RemoteWorkerRepositorySet<ACTOR, ACTOR_DATA, USER>> {
     val databaseFactory = R2DBCDatabaseFactory(connectionFactory.create())
     databaseFactory.getDriver().use {
         it.await(null, "CREATE TABLE IF NOT EXISTS metadata(version INTEGER NOT NULL)", 0)
@@ -68,9 +68,9 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DA
 
 public suspend inline fun <reified ACTOR : Any, reified USER : Any, reified ROOM : Any, reified MESSAGE : Any, reified ACTOR_DATA> createR2DBCRepositorySet(
     stringFormat: StringFormat = Json.Default,
-    connectionFactory: ConnectionFactory
-): Pair<RepositorySet<ACTOR, USER, ROOM, MESSAGE>, ActorProvisionRepository<ACTOR, ACTOR_DATA>> =
-    createR2DBCRepositorySet<ACTOR, USER, ROOM, MESSAGE, ACTOR_DATA>(
+    connectionFactory: ConnectionFactory,
+): Pair<AppServiceWorkerRepositorySet<ACTOR, USER, ROOM, MESSAGE>, RemoteWorkerRepositorySet<ACTOR, ACTOR_DATA, USER>> =
+    createR2DBCRepositorySet(
         actorIdSerializer = stringFormat.serializersModule.serializer(),
         puppetIdSerializer = stringFormat.serializersModule.serializer(),
         roomIdSerializer = stringFormat.serializersModule.serializer(),

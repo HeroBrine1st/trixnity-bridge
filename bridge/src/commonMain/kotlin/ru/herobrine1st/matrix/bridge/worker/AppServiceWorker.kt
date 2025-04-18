@@ -43,16 +43,16 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     applicationJob: Job,
     private val client: MatrixClientServerApiClient,
     remoteWorkerFactory: ProvisioningRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
-    repositorySet: RepositorySet<ACTOR, USER, ROOM, MESSAGE>,
+    appServiceWorkerRepositorySet: AppServiceWorkerRepositorySet<ACTOR, USER, ROOM, MESSAGE>,
     bridgeConfig: BridgeConfig,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
 ) : ApplicationServiceApiServerHandler {
 
-    private val actorRepository: ActorRepository<ACTOR> = repositorySet.actorRepository
-    private val messageRepository: MessageRepository<MESSAGE> = repositorySet.messageRepository
-    private val puppetRepository: PuppetRepository<USER> = repositorySet.puppetRepository
-    private val roomRepository: RoomRepository<ACTOR, ROOM> = repositorySet.roomRepository
-    private val transactionRepository: TransactionRepository = repositorySet.transactionRepository
+    private val actorRepository: ActorRepository<ACTOR> = appServiceWorkerRepositorySet.actorRepository
+    private val messageRepository: MessageRepository<MESSAGE> = appServiceWorkerRepositorySet.messageRepository
+    private val puppetRepository: PuppetRepository<USER> = appServiceWorkerRepositorySet.puppetRepository
+    private val roomRepository: RoomRepository<ACTOR, ROOM> = appServiceWorkerRepositorySet.roomRepository
+    private val transactionRepository: TransactionRepository = appServiceWorkerRepositorySet.transactionRepository
 
     private val appServiceBotId: UserId = UserId(bridgeConfig.botLocalpart, bridgeConfig.homeserverDomain)
     private val puppetPrefix = bridgeConfig.puppetPrefix
