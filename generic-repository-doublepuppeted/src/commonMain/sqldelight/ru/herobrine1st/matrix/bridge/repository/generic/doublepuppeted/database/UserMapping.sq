@@ -1,0 +1,22 @@
+import net.folivo.trixnity.core.model.UserId;
+
+-- Why second table (first is Puppet)? Well, there can be actor account puppet. And those tables have very different meaning of data.
+CREATE TABLE userMapping (
+  userId VARCHAR(255) AS UserId UNIQUE NOT NULL,
+  remoteId VARCHAR(4096) UNIQUE NOT NULL,
+  PRIMARY KEY (userId, remoteId)
+);
+
+getMxIdOfSomeone:
+SELECT userId, remoteId FROM userMapping WHERE remoteId IN ?;
+
+getMxId:
+SELECT userId FROM userMapping WHERE remoteId = ?;
+
+registerPairFromRemote:
+INSERT INTO userMapping(remoteId, userId) VALUES (?, ?)
+ON CONFLICT (remoteId) DO UPDATE SET userId = EXCLUDED.userId;
+
+registerPairFromMatrix:
+INSERT INTO userMapping(userId, remoteId) VALUES (?, ?)
+ON CONFLICT (userId) DO UPDATE SET remoteId = EXCLUDED.remoteId;

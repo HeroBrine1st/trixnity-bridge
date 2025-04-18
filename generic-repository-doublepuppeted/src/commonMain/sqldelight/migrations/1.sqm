@@ -1,1 +1,7 @@
+CREATE TABLE UserMapping (
+  userId VARCHAR(255) UNIQUE NOT NULL,
+  remoteId VARCHAR(4096) UNIQUE NOT NULL,
+  PRIMARY KEY (userId, remoteId)
+);
+
 ALTER TABLE room DROP COLUMN isDirect;
