@@ -79,6 +79,15 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                             )
                         )
                     }
+
+                    is BasicRemoteWorker.Event.Remote.Room.RealUserMembership<USER, ROOM> -> emit(
+                        MappingRemoteWorker.Event.Remote.Room.RealUserMembership(
+                            roomId = event.roomId,
+                            sender = event.sender,
+                            stateKey = event.stateKey,
+                            membership = event.membership
+                        )
+                    )
                 }
             }
         }

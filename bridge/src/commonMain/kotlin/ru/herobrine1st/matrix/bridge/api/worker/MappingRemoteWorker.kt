@@ -85,6 +85,7 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                  */
                 // [ProvisioningRemoteWorker] implementation hint: user can join while [MappingRemoteWorker]
                 // recovers from failure. Handling error after inviting joined user is mandatory.
+                // Also kicking is probably not idempotent.
                 public data class RealUserMembership<USER : Any, ROOM : Any>(
                     override val roomId: ROOM,
                     val sender: USER?,
