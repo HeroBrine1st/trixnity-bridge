@@ -199,46 +199,6 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             .getOrThrow() // this hides alias from users, but does not remove it
     }
 
-    private suspend fun inviteAndJoinPuppetToRoom(mxRoomId: RoomId, mxPuppetId: UserId, asServiceUser: Boolean) {
-        client.room.inviteUser(
-            mxRoomId,
-            mxPuppetId,
-            reason = "Falling back to automatic join",
-            asUserId = appServiceBotId // bot is joined in every bridged room
-        ).onFailure {
-            if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
-                val members = client.room.getJoinedMembers(mxRoomId).getOrThrow().joined.keys
-                if (mxPuppetId in members) {
-                    logger.warn(it) { "Tried to invite already joined user $mxPuppetId to $mxRoomId, ignoring" }
-                    return
-                } else throw it
-            } else throw it
-        }
-            .getOrThrow()
-
-        if (asServiceUser) {
-            val newContent = client.room.getStateEvent<ServiceMembersEventContent>(mxRoomId)
-                .recover {
-                    // TODO verify that it is "NotFound"
-                    if (it is MatrixServerException && it.errorResponse is ErrorResponse.NotFound) {
-                        ServiceMembersEventContent(
-                            serviceMembers = listOf(appServiceBotId)
-                        )
-                    } else throw it
-                }.map {
-                    it.copy(serviceMembers = it.serviceMembers + mxPuppetId)
-                }.getOrThrow()
-            client.room.sendStateEvent(mxRoomId, newContent).getOrThrow()
-        }
-
-        // probably idempotent
-        client.room.joinRoom(
-            mxRoomId,
-            reason = "Falling back to automatic join",
-            asUserId = mxPuppetId
-        ).getOrThrow()
-    }
-
     private suspend fun handleMembershipEvent(event: MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM>) {
         // SAFETY: It is guaranteed by MappingRemoteWorker that room and users are already provisioned
         val roomId = api.getRoomId(event.roomId)!!
@@ -294,7 +254,6 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
                     if (stateKey in members) {
                         logger.warn(it) { "Tried to invite already joined user $stateKey to $roomId, ignoring" }
-                        Unit
                     } else throw it
                 } else throw it
             }.getOrThrow()
@@ -344,7 +303,6 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
                     if (stateKey in members) {
                         logger.warn(it) { "Tried to invite already joined user $stateKey to $roomId, ignoring" }
-                        Unit
                     } else throw it
                 } else throw it
             }.getOrThrow()
