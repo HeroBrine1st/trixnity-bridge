@@ -164,9 +164,6 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     stateKey = ""
                 )
             ),
-            powerLevelContentOverride = PowerLevelsEventContent(users = buildMap {
-                if (creator != appServiceBotId) set(appServiceBotId, 100L)
-            }),
             preset = CreateRoom.Request.Preset.PRIVATE,
             isDirect = roomData.directData != null,
             asUserId = creator
@@ -186,6 +183,21 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             }
             roomId
         }.getOrThrow()
+
+        // https://github.com/matrix-org/matrix-spec/issues/492
+        // Deep merge is required, but Synapse overrides fields instead
+        // Combined with trixnity serialising default values too this overrides synapse defaults with trixnity ones
+        val currentState = client.room.getStateEvent<PowerLevelsEventContent>(roomId, asUserId = creator).getOrThrow()
+        val requiredUsers = buildMap {
+            set(appServiceBotId, 100L)
+        }
+        if (currentState.users + requiredUsers != currentState.users) {
+            client.room.sendStateEvent(
+                roomId = roomId,
+                eventContent = currentState.copy(users = currentState.users + requiredUsers),
+                asUserId = creator
+            ).getOrThrow()
+        }
 
         return roomId
     }
