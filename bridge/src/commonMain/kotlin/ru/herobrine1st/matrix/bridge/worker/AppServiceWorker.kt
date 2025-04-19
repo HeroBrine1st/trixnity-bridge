@@ -64,8 +64,6 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
         MappingRemoteWorker.Factory { api ->
             DefaultMappingRemoteWorker(
                 client,
-                appServiceWorkerRepositorySet.puppetRepository,
-                appServiceWorkerRepositorySet.roomRepository,
                 api,
                 remoteWorkerFactory
             )
@@ -90,8 +88,6 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
         ProvisioningRemoteWorker.Factory { api ->
             DefaultProvisioningRemoteWorker(
                 client,
-                appServiceWorkerRepositorySet.puppetRepository,
-                appServiceWorkerRepositorySet.roomRepository,
                 idMapperFactory,
                 bridgeConfig,
                 api,
