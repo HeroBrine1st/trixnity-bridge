@@ -61,7 +61,7 @@ public class UserMappingRepositoryImpl<USER : Any>(
         database.userMappingQueries.getMxId(stringFormat.encodeToString(idSerializer, id)).awaitAsOneOrNull()
     }
 
-    override suspend fun registerPairFromRemote(remoteId: USER, mxId: UserId) =
+    override suspend fun registerPairFromRemote(remoteId: USER, mxId: UserId): Unit =
         databaseFactory.useDatabase { database ->
             database.userMappingQueries.registerPairFromRemote(
                 stringFormat.encodeToString(idSerializer, remoteId),
@@ -69,7 +69,7 @@ public class UserMappingRepositoryImpl<USER : Any>(
             )
         }
 
-    override suspend fun registerPairFromMatrix(mxId: UserId, remoteId: USER) =
+    override suspend fun registerPairFromMatrix(mxId: UserId, remoteId: USER): Unit =
         databaseFactory.useDatabase { database ->
             database.userMappingQueries.registerPairFromMatrix(
                 mxId,
