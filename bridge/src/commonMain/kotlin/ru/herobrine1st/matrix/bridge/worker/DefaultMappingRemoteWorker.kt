@@ -38,12 +38,18 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                 is BasicRemoteWorker.Event.Disconnected -> emit(MappingRemoteWorker.Event.Disconnected(event.reason))
                 is BasicRemoteWorker.Event.FatalFailure -> emit(MappingRemoteWorker.Event.FatalFailure(event.reason))
                 is BasicRemoteWorker.Event.Remote -> when (event) {
-                    is BasicRemoteWorker.Event.Remote.Room.Create -> emit(
-                        MappingRemoteWorker.Event.Remote.Room.Create(
-                            roomData = event.roomData ?: remoteWorker.getRoom(actorId, event.roomId)
-                                .also { check(it.id == event.roomId) }
+                    is BasicRemoteWorker.Event.Remote.Room.Create -> {
+                        val roomData = event.roomData ?: remoteWorker.getRoom(actorId, event.roomId)
+                            .also { check(it.id == event.roomId) }
+                        roomData.directData?.members?.forEach {
+                            ensureUserExists(actorId, it)
+                        }
+                        emit(
+                            MappingRemoteWorker.Event.Remote.Room.Create(
+                                roomData = roomData
+                            )
                         )
-                    )
+                    }
 
                     is BasicRemoteWorker.Event.Remote.Room.Membership -> {
                         ensureRoomExists(actorId, event)
