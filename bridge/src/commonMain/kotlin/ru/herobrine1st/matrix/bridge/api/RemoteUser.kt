@@ -14,7 +14,7 @@ package ru.herobrine1st.matrix.bridge.api
  */
 public data class RemoteUser<USER : Any>(
     val id: USER,
-    val displayName: String,
+    val displayName: String?,
     // TODO avatarUrl
 )
 
