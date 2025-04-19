@@ -195,4 +195,15 @@ public interface BasicRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE 
             }
         }
     }
+
+    /**
+     * A provider of remote worker. Guaranteed to be used exactly once and most probably be disposed right away.
+     */
+    public fun interface Factory<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any> {
+        /**
+         * @param api API for remoe worker to use
+         * @return A [ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker] instance for remote network
+         */
+        public fun getRemoteWorker(api: RemoteWorkerAPI<USER, ROOM, MESSAGE>): BasicRemoteWorker<ACTOR, USER, ROOM, MESSAGE>
+    }
 }
