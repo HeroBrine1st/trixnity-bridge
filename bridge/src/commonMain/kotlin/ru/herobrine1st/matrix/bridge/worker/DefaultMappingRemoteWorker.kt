@@ -12,14 +12,10 @@ import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
 import ru.herobrine1st.matrix.bridge.api.RemoteWorkerAPI
 import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
-import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
-import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 
 public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
-    private val puppetRepository: PuppetRepository<USER>,
-    private val roomRepository: RoomRepository<ACTOR, ROOM>,
-    api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
+    private val api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
     remoteWorkerFactory: BasicRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
 ) : MappingRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
     private val remoteWorker = remoteWorkerFactory.getRemoteWorker(api)
@@ -99,7 +95,7 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
         actorId: ACTOR,
         event: BasicRemoteWorker.Event.Remote.Room<USER, ROOM, MESSAGE>,
     ) {
-        if (!roomRepository.isRoomBridged(event.roomId)) {
+        if (!api.isRoomBridged(event.roomId)) {
             logger.debug { "Emitting automatic room ${event.roomId} provision request" }
             emit(
                 MappingRemoteWorker.Event.Remote.Room.Create(
@@ -114,7 +110,7 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
         actorId: ACTOR,
         user: USER,
     ) {
-        if (puppetRepository.getPuppetId(user) == null) {
+        if (api.getPuppetId(user) == null) {
             logger.debug { "Emitting automatic user $user provision request" }
             emit(
                 MappingRemoteWorker.Event.Remote.User.Create(
@@ -128,8 +124,9 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
         room: ROOM,
         user: USER,
     ) {
-        val roomId = roomRepository.getMxRoom(room)!! // SAFETY: internally guaranteed by ensureRoomExists
-        val userId = puppetRepository.getPuppetId(user)!! // SAFETY: internally guaranteed by ensureUserExists
+
+        val roomId = api.getRoomId(room)!! // SAFETY: internally guaranteed by ensureRoomExists
+        val userId = api.getPuppetId(user)!! // SAFETY: internally guaranteed by ensureUserExists
         val members = client.room.getJoinedMembers(roomId).getOrThrow()
         if (userId !in members.joined) {
             logger.debug { "Emitting automatic user $user invite and join request" }

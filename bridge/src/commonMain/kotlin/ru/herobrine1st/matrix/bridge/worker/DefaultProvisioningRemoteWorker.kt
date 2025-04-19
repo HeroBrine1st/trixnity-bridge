@@ -24,17 +24,13 @@ import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Create
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker.Event.Remote.Room.Message
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
-import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
-import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
 
 public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
-    private val puppetRepository: PuppetRepository<USER>,
-    private val roomRepository: RoomRepository<ACTOR, ROOM>,
     idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
     bridgeConfig: BridgeConfig,
-    api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
+    private val api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
     mappingRemoteWorkerFactory: MappingRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
 ) : ProvisioningRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
     private val mappingRemoteWorker = mappingRemoteWorkerFactory.getRemoteWorker(api)
@@ -98,7 +94,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
     private suspend fun replicateRemoteUser(
         userData: RemoteUser<USER>,
     ): UserId {
-        puppetRepository.getPuppetId(userData.id)?.let {
+        api.getPuppetId(userData.id)?.let {
             return@replicateRemoteUser it
         }
 
@@ -135,7 +131,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
     private suspend fun replicateRemoteRoom(
         roomData: RemoteRoom<USER, ROOM>,
     ): RoomId {
-        roomRepository.getMxRoom(roomData.id)?.let {
+        api.getRoomId(roomData.id)?.let {
             return it
         }
 
@@ -151,14 +147,14 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         // It is also known as Canonical DM, but without HS support we fallback to this human-likeness
 
         val alias = idMapper.buildRoomAlias(roomData.id)
-        val creator = roomData.creator?.let { puppetRepository.getPuppetId(it) } ?: appServiceBotId
+        val creator = roomData.creator?.let { api.getPuppetId(it) } ?: appServiceBotId
 
         val roomId = client.room.createRoom(
             name = displayName,
             roomAliasId = alias, // idempotency via stable alias
             invite = (roomData.directData?.members?.mapTo(mutableSetOf()) {
                 // SAFETY: It is guaranteed by MappingRemoteWorker that all members are already provisioned
-                puppetRepository.getPuppetId(it)!!
+                api.getPuppetId(it)!!
             } ?: emptySet()) + appServiceBotId - creator + roomData.realMembers,
             initialState = listOf(
                 InitialStateEvent(
@@ -245,13 +241,13 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
 
     private suspend fun handleMembershipEvent(event: MappingRemoteWorker.Event.Remote.Room.Membership<USER, ROOM>) {
         // SAFETY: It is guaranteed by MappingRemoteWorker that room and users are already provisioned
-        val roomId = roomRepository.getMxRoom(event.roomId)!!
-        val stateKey = puppetRepository.getPuppetId(event.stateKey)!!
+        val roomId = api.getRoomId(event.roomId)!!
+        val stateKey = api.getPuppetId(event.stateKey)!!
         val sender = when (event.sender) {
             event.stateKey -> stateKey
             // FIXME bot join is asynchronous, this may lead to race condition
             null -> appServiceBotId
-            else -> puppetRepository.getPuppetId(event.sender)!!
+            else -> api.getPuppetId(event.sender)!!
         }
 
         if (event.membership == Membership.INVITE && event.asServiceMember) {
@@ -312,11 +308,11 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
     }
 
     private suspend fun handleRealUserMembership(event: MappingRemoteWorker.Event.Remote.Room.RealUserMembership<USER, ROOM>) {
-        val roomId = roomRepository.getMxRoom(event.roomId)!!
+        val roomId = api.getRoomId(event.roomId)!!
         val stateKey = event.stateKey
         val sender = when (event.sender) {
             null -> appServiceBotId
-            else -> puppetRepository.getPuppetId(event.sender)!!
+            else -> api.getPuppetId(event.sender)!!
         }
         // TODO in future we'll have a direct reference to AppServiceWorker here (due to migration from getEventsFlow to AppServiceWorker.handleRemoteEvent)
         //      this will allow to use its `isBridgeControlled` method
