@@ -23,6 +23,9 @@ import net.folivo.trixnity.core.model.events.m.room.Membership
 import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
 import net.folivo.trixnity.core.model.events.m.room.RoomMessageEventContent
 import ru.herobrine1st.matrix.bridge.api.ErrorNotifier
+import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
+import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
+import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
 import ru.herobrine1st.matrix.bridge.config.BridgeConfig
 import ru.herobrine1st.matrix.bridge.exception.EventHandlingException
@@ -47,6 +50,59 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     bridgeConfig: BridgeConfig,
     private val errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
 ) : ApplicationServiceApiServerHandler {
+    public constructor(
+        applicationJob: Job,
+        client: MatrixClientServerApiClient,
+        remoteWorkerFactory: BasicRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
+        idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
+        appServiceWorkerRepositorySet: AppServiceWorkerRepositorySet<ACTOR, USER, ROOM, MESSAGE>,
+        bridgeConfig: BridgeConfig,
+        errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
+    ) : this(
+        applicationJob,
+        client,
+        MappingRemoteWorker.Factory { api ->
+            DefaultMappingRemoteWorker(
+                client,
+                appServiceWorkerRepositorySet.puppetRepository,
+                appServiceWorkerRepositorySet.roomRepository,
+                api,
+                remoteWorkerFactory
+            )
+        },
+        idMapperFactory,
+        appServiceWorkerRepositorySet,
+        bridgeConfig,
+        errorNotifier
+    )
+
+    public constructor(
+        applicationJob: Job,
+        client: MatrixClientServerApiClient,
+        remoteWorkerFactory: MappingRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
+        idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
+        appServiceWorkerRepositorySet: AppServiceWorkerRepositorySet<ACTOR, USER, ROOM, MESSAGE>,
+        bridgeConfig: BridgeConfig,
+        errorNotifier: ErrorNotifier = ErrorNotifier { _, _, _ -> },
+    ) : this(
+        applicationJob,
+        client,
+        ProvisioningRemoteWorker.Factory { api ->
+            DefaultProvisioningRemoteWorker(
+                client,
+                appServiceWorkerRepositorySet.puppetRepository,
+                appServiceWorkerRepositorySet.roomRepository,
+                idMapperFactory,
+                bridgeConfig,
+                api,
+                remoteWorkerFactory
+            )
+        },
+        appServiceWorkerRepositorySet,
+        bridgeConfig,
+        errorNotifier
+    )
+
 
     private val actorRepository: ActorRepository<ACTOR> = appServiceWorkerRepositorySet.actorRepository
     private val messageRepository: MessageRepository<MESSAGE> = appServiceWorkerRepositorySet.messageRepository

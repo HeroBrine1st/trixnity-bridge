@@ -9,6 +9,7 @@ import net.folivo.trixnity.core.model.events.ClientEvent
 import net.folivo.trixnity.core.model.events.m.room.Membership
 import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
 import ru.herobrine1st.matrix.bridge.api.RemoteMessageEventData
+import ru.herobrine1st.matrix.bridge.api.RemoteWorkerAPI
 import ru.herobrine1st.matrix.bridge.api.worker.BasicRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
 import ru.herobrine1st.matrix.bridge.repository.PuppetRepository
@@ -16,10 +17,12 @@ import ru.herobrine1st.matrix.bridge.repository.RoomRepository
 
 public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
-    private val remoteWorker: BasicRemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
-    private val roomRepository: RoomRepository<ACTOR, ROOM>,
     private val puppetRepository: PuppetRepository<USER>,
+    private val roomRepository: RoomRepository<ACTOR, ROOM>,
+    api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
+    remoteWorkerFactory: BasicRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
 ) : MappingRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
+    private val remoteWorker = remoteWorkerFactory.getRemoteWorker(api)
     private val logger = KotlinLogging.logger { }
 
     override suspend fun EventHandlerScope<MESSAGE>.handleEvent(

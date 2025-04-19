@@ -17,10 +17,7 @@ import net.folivo.trixnity.core.model.events.InitialStateEvent
 import net.folivo.trixnity.core.model.events.m.room.CanonicalAliasEventContent
 import net.folivo.trixnity.core.model.events.m.room.Membership
 import net.folivo.trixnity.core.model.events.m.room.PowerLevelsEventContent
-import ru.herobrine1st.matrix.bridge.api.EventHandlerScope
-import ru.herobrine1st.matrix.bridge.api.RemoteIdToMatrixMapper
-import ru.herobrine1st.matrix.bridge.api.RemoteRoom
-import ru.herobrine1st.matrix.bridge.api.RemoteUser
+import ru.herobrine1st.matrix.bridge.api.*
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker
 import ru.herobrine1st.matrix.bridge.api.worker.MappingRemoteWorker.Event.Remote.Room.RealUserMembership.RestrictedMembership
 import ru.herobrine1st.matrix.bridge.api.worker.ProvisioningRemoteWorker
@@ -33,12 +30,14 @@ import ru.herobrine1st.matrix.compat.content.ServiceMembersEventContent
 
 public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any>(
     private val client: MatrixClientServerApiClient,
-    private val mappingRemoteWorker: MappingRemoteWorker<ACTOR, USER, ROOM, MESSAGE>,
     private val puppetRepository: PuppetRepository<USER>,
     private val roomRepository: RoomRepository<ACTOR, ROOM>,
     idMapperFactory: RemoteIdToMatrixMapper.Factory<ROOM, USER>,
     bridgeConfig: BridgeConfig,
+    api: RemoteWorkerAPI<USER, ROOM, MESSAGE>,
+    mappingRemoteWorkerFactory: MappingRemoteWorker.Factory<ACTOR, USER, ROOM, MESSAGE>,
 ) : ProvisioningRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
+    private val mappingRemoteWorker = mappingRemoteWorkerFactory.getRemoteWorker(api)
     private val appServiceBotId: UserId = UserId(bridgeConfig.botLocalpart, bridgeConfig.homeserverDomain)
     private val puppetPrefix = bridgeConfig.puppetPrefix
     private val roomAliasPrefix = bridgeConfig.roomAliasPrefix
