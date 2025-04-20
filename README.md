@@ -21,17 +21,13 @@ What makes this framework next-generation is this set of features:
 - No room aliases - allows for automatic room name generation via heroes**
 - Statelessness as it is even possible - the only state saved are ID mappings and handled transaction IDs, as well as
   registered actors.
-- \[TODO\] A strict mode disabling automatic room and user provision***
-- \[TODO\] Support for webhook-based bridges
+- A strict mode disabling automatic room and user provision (by implementing MappingRemoteWorker instead of BasicRemoteWorker)
+- \[TODO\] Support for webhook-based bridges (this is easy because we only need to pass event consumer earlier than it is currently (currently via Flow, where consumer is FlowCollector))
 
 \* You must fix errors yourself of course, but then you can restart the bridge and it will continue where it crashed.
 You must also satisfy the idempotency contract.  
 \*\* Currently alias is created (and then removed) on room provision as idempotency measure, but its usage will be
 removed entirely via custom state events that will also allow for partial data recovery and migration.  
-\*\*\* Currently, framework tries to create all rooms and users it sees for first time. However, this only bloats the
-code, and can be extracted to another middleman interface (an adapter), which will be implemented to restore automatic
-provision, but will also be available for external implementations, allowing for more control over created rooms and
-users.
 
 The only drawback is slightly harder development and more boilerplate.
 
@@ -46,7 +42,7 @@ However, it is possible to show the main feature of this framework. Most of your
 interface:
 
 ```kotlin
-public interface RemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
+public interface BasicRemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
     // a stream of events from matrix
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
@@ -55,13 +51,13 @@ public interface RemoteWorker<ACTOR, USER, ROOM, MESSAGE> {
     )
     
     // a stream of events from bridged service
-    public fun getEvents(actorId: ACTOR): Flow<WorkerEvent<USER, ROOM, MESSAGE>>
+    public fun getEvents(actorId: ACTOR): Flow<BasicRemoteWorker.Event<USER, ROOM, MESSAGE>>
 
     // a method to get information about particular user on bridged service
     public suspend fun getUser(actorId: ACTOR, id: USER): RemoteUser<USER>
 
     // a method to get information about particular room on bridged service
-    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom
+    public suspend fun getRoom(actorId: ACTOR, id: ROOM): RemoteRoom<USER, ROOM>
 
     // a method to get all users in particular room on bridged service
     public fun getRoomMembers(actorId: ACTOR, remoteId: ROOM): Flow<Pair<USER, RemoteUser<USER>?>>
