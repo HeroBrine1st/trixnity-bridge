@@ -23,11 +23,13 @@ What makes this framework next-generation is this set of features:
   registered actors.
 - A strict mode disabling automatic room and user provision (by implementing MappingRemoteWorker instead of BasicRemoteWorker)
 - \[TODO\] Support for webhook-based bridges (this is easy because we only need to pass event consumer earlier than it is currently (currently via Flow, where consumer is FlowCollector))
+- \[TODO\] Support for spaces\*\*\*
 
 \* You must fix errors yourself of course, but then you can restart the bridge and it will continue where it crashed.
 You must also satisfy the idempotency contract.  
 \*\* Currently alias is created (and then removed) on room provision as idempotency measure, but its usage will be
 removed entirely via custom state events that will also allow for partial data recovery and migration.  
+\*\*\* Support for nested spaces is not planned (real usage is vague) but should be possible by replacing ProvisioningRemoteWorker with an implementation that explicitly supports lists as space identifiers
 
 The only drawback is slightly harder development and more boilerplate.
 
