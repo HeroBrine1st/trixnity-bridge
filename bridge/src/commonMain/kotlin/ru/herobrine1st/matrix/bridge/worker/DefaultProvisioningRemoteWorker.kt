@@ -184,6 +184,10 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             roomId
         }.getOrThrow()
 
+        if (creator != appServiceBotId) {
+            client.room.joinRoom(roomId, asUserId = appServiceBotId).getOrThrow() // idempotent
+        }
+
         // https://github.com/matrix-org/matrix-spec/issues/492
         // Deep merge is required, but Synapse overrides fields instead
         // Combined with trixnity serialising default values too this overrides synapse defaults with trixnity ones
