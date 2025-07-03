@@ -29,7 +29,7 @@ What makes this framework next-generation is this set of features:
 You must also satisfy the idempotency contract.  
 \*\* Currently alias is created (and then removed) on room provision as idempotency measure, but its usage will be
 removed entirely via custom state events that will also allow for partial data recovery and migration.  
-\*\*\* Support for nested spaces is not planned (real usage is vague) but should be possible by replacing ProvisioningRemoteWorker with an implementation that explicitly supports lists as space identifiers
+\*\*\* Will be done with exposure of parent/child relationships to remote workers adding only parentRoomId and relationType fields via product type, which should allow arbitrary nesting without compromising simplicity.
 
 The only drawback is slightly harder development and more boilerplate.
 
