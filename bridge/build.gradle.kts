@@ -8,7 +8,6 @@ kotlin {
     explicitApiWarning()
 
     jvm()
-    linuxX64()
 
     sourceSets {
         commonMain.dependencies {
