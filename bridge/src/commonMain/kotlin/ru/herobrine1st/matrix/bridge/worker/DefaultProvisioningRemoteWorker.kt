@@ -102,7 +102,8 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
 
         val puppetId = client.authentication.register(
             username = username,
-            isAppservice = true
+            isAppservice = true,
+            inhibitLogin = true,
         ).map {
             if (it !is UIA.Success<Register.Response>) {
                 logger.error { "Unexpected UIA step occurred while creating puppet: $it" }
