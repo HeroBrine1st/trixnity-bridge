@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "ru.herobrine1st.matrix"
-    version = "1.0.3-pregen" // before generic, or previous generation
+    version = "1.0.4-pregen" // before generic, or previous generation
 
     repositories {
         mavenCentral()
