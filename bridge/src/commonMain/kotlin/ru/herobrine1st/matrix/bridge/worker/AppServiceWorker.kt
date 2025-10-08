@@ -230,7 +230,8 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                         // Try to create
                         client.authentication.register(
                             username = appServiceBotId.localpart,
-                            isAppservice = true
+                            isAppservice = true,
+                            inhibitLogin = true,
                         ).onSuccess { response ->
                             if (response !is UIA.Success) {
                                 logger.error { "Couldn't create $appServiceBotId bot due to UIA error: $response" }
