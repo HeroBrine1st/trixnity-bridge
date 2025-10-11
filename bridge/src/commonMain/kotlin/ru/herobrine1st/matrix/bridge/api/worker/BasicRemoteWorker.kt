@@ -46,7 +46,7 @@ public interface BasicRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE 
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
         roomId: ROOM,
-        event: ClientEvent.RoomEvent<*>
+        event: ClientEvent.RoomEvent<*>,
     )
 
     /**

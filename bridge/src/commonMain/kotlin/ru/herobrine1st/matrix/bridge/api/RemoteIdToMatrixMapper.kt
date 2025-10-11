@@ -15,7 +15,7 @@ public interface RemoteIdToMatrixMapper<ROOM : Any, USER : Any> {
         public fun create(
             roomAliasPrefix: String,
             puppetPrefix: String,
-            homeserverDomain: String
+            homeserverDomain: String,
         ): RemoteIdToMatrixMapper<ROOM, USER>
     }
 }

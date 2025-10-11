@@ -10,7 +10,7 @@ import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.
 public class PuppetRepositoryImpl<USER : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<USER>,
-    internal val stringFormat: StringFormat
+    internal val stringFormat: StringFormat,
 ) : PuppetRepository<USER> {
     override suspend fun getPuppetId(id: USER): UserId? = databaseFactory.useDatabase { database ->
         database.puppetQueries.getUserIdByRemoteId(stringFormat.encodeToString(serializer, id)).awaitAsOneOrNull()

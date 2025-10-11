@@ -6,7 +6,7 @@ public data class BridgeConfig(
     val puppetPrefix: String,
     val roomAliasPrefix: String,
     val provisioning: Provisioning,
-    val presence: Presence
+    val presence: Presence,
 ) {
     public data class Provisioning(val whitelist: List<Regex>, val blacklist: List<Regex>)
 

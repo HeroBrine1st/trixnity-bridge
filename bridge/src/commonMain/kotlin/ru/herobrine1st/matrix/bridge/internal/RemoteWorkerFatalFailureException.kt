@@ -1,3 +1,3 @@
 package ru.herobrine1st.matrix.bridge.internal
 
-internal class RemoteWorkerFatalFailureException: Exception()
+internal class RemoteWorkerFatalFailureException : Exception()

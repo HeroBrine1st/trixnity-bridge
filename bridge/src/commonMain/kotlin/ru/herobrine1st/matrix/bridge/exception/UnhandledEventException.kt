@@ -5,4 +5,4 @@ package ru.herobrine1st.matrix.bridge.exception
  *
  * @param message to be shown to user
  */
-public class UnhandledEventException(message: String, cause: Throwable? = null): EventHandlingException(message, cause)
+public class UnhandledEventException(message: String, cause: Throwable? = null) : EventHandlingException(message, cause)

@@ -40,22 +40,24 @@ public interface ActorProvisionRepository<ACTOR : Any, DATA> {
 
 public data class ActorWithData<ACTOR : Any, DATA>(
     public val id: ACTOR,
-    public val data: DATA
+    public val data: DATA,
 )
 
 internal class ActorProvisionRepositoryImpl<ACTOR : Any, DATA>(
     private val databaseFactory: DatabaseFactory,
     private val idSerializer: KSerializer<ACTOR>,
     private val dataSerializer: KSerializer<DATA>,
-    private val stringFormat: StringFormat
+    private val stringFormat: StringFormat,
 ) : ActorProvisionRepository<ACTOR, DATA> {
     override suspend fun getAllActors(): List<ActorWithData<ACTOR, DATA>> = databaseFactory.useDatabase { database ->
-        database.actorQueries.getAll(mapper = { id, data ->
-            ActorWithData(
-                stringFormat.decodeFromString(idSerializer, id),
-                stringFormat.decodeFromString(dataSerializer, data)
-            )
-        }).awaitAsList()
+        database.actorQueries.getAll(
+            mapper = { id, data ->
+                ActorWithData(
+                    stringFormat.decodeFromString(idSerializer, id),
+                    stringFormat.decodeFromString(dataSerializer, data),
+                )
+            },
+        ).awaitAsList()
     }
 
     override suspend fun getActorData(id: ACTOR): DATA = databaseFactory.useDatabase { database ->
@@ -70,14 +72,14 @@ internal class ActorProvisionRepositoryImpl<ACTOR : Any, DATA>(
     override suspend fun addActor(id: ACTOR, data: DATA) = databaseFactory.useDatabase { database ->
         database.actorQueries.add(
             stringFormat.encodeToString(idSerializer, id),
-            stringFormat.encodeToString(dataSerializer, data)
+            stringFormat.encodeToString(dataSerializer, data),
         )
     }
 
     override suspend fun updateActor(id: ACTOR, data: DATA) = databaseFactory.useDatabase { database ->
         database.actorQueries.update(
             stringFormat.encodeToString(dataSerializer, data),
-            stringFormat.encodeToString(idSerializer, id)
+            stringFormat.encodeToString(idSerializer, id),
         )
             .awaitAsList().size.let { check(it > 0) { "No rows updated, is $id a real actor id?" } }
     }

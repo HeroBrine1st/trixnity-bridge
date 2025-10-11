@@ -62,8 +62,8 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                         emit(
                             Create(
                                 roomId,
-                                event.roomId
-                            )
+                                event.roomId,
+                            ),
                         )
                         clearRoomIdempotencyMarker(roomId)
                     }
@@ -78,8 +78,8 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                     is MappingRemoteWorker.Event.Remote.User.Create<USER> -> emit(
                         ProvisioningRemoteWorker.Event.Remote.User.Create(
                             mxUserId = replicateRemoteUser(event.userData),
-                            event.userId
-                        )
+                            event.userId,
+                        ),
                     )
                     // TODO update event
                 }
@@ -115,7 +115,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
                 logger.debug(it) { "Got idempotency hit for username ${username}, reusing" }
                 return@recover UserId(
                     username,
-                    homeserverDomain
+                    homeserverDomain,
                 )
             } else throw it
         }.getOrThrow()
@@ -123,7 +123,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
         client.user.setDisplayName(
             puppetId,
             displayName = userData.displayName,
-            asUserId = puppetId
+            asUserId = puppetId,
         ).getOrThrow()
 
         return puppetId
@@ -160,14 +160,14 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             initialState = listOf(
                 InitialStateEvent(
                     content = ServiceMembersEventContent(
-                        serviceMembers = listOf(appServiceBotId)
+                        serviceMembers = listOf(appServiceBotId),
                     ),
-                    stateKey = ""
-                )
+                    stateKey = "",
+                ),
             ),
             preset = CreateRoom.Request.Preset.PRIVATE,
             isDirect = roomData.directData != null,
-            asUserId = creator
+            asUserId = creator,
         ).recover {
             if (it !is MatrixServerException || it.errorResponse !is ErrorResponse.RoomInUse) throw it
             logger.debug(it) { "Got idempotency hit for alias ${alias.full}, fetching and reusing existing room" }
@@ -200,7 +200,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             client.room.sendStateEvent(
                 roomId = roomId,
                 eventContent = currentState.copy(users = currentState.users + requiredUsers),
-                asUserId = creator
+                asUserId = creator,
             ).getOrThrow()
         }
 
@@ -253,19 +253,19 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
 
             Membership.LEAVE if event.sender == event.stateKey -> client.room.leaveRoom(
                 roomId,
-                asUserId = stateKey
+                asUserId = stateKey,
             ).getOrThrow()
 
             Membership.LEAVE -> client.room.kickUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).getOrThrow()
 
             Membership.INVITE -> client.room.inviteUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).onFailure {
                 if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
                     val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
@@ -278,7 +278,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             Membership.BAN -> client.room.banUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).getOrThrow()
         }
     }
@@ -298,7 +298,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             RestrictedMembership.LEAVE -> client.room.kickUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).recover {
                 if (it is MatrixServerException && it.errorResponse == ErrorResponse.Forbidden) {
                     // We don't know why it is forbidden. Let's see the one exact case: the user is already left.
@@ -314,7 +314,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             RestrictedMembership.INVITE -> client.room.inviteUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).onFailure {
                 if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
                     val members = client.room.getJoinedMembers(roomId).getOrThrow().joined.keys
@@ -327,7 +327,7 @@ public class DefaultProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any
             RestrictedMembership.BAN -> client.room.banUser(
                 roomId,
                 stateKey,
-                asUserId = sender
+                asUserId = sender,
             ).getOrThrow()
         }
     }

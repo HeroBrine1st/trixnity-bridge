@@ -5,7 +5,7 @@ import org.reactivestreams.Publisher
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.database.*
 
 internal class R2DBCDatabaseFactory(
-    val connectionFactory: Publisher<out Connection>
+    val connectionFactory: Publisher<out Connection>,
 ) : DatabaseFactory {
     override suspend fun <T> useDatabase(block: suspend (Database) -> T): T {
         getDriver().use {
@@ -15,7 +15,7 @@ internal class R2DBCDatabaseFactory(
                 messageAdapter = Message.Adapter(EventIdAdapter),
                 puppetAdapter = Puppet.Adapter(UserIdAdapter),
                 roomAdapter = Room.Adapter(RoomIdAdapter),
-                userMappingAdapter = UserMapping.Adapter(UserIdAdapter)
+                userMappingAdapter = UserMapping.Adapter(UserIdAdapter),
             )
             return block(database)
         }

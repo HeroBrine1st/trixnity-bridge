@@ -14,4 +14,4 @@ package ru.herobrine1st.matrix.bridge.exception
  * - Database errors: probably this problem spans multiple unrelated events
  * - Remote side API is deprecated and then removed, which renders remote worker inoperable
  */
-public sealed class EventHandlingException(message: String?, cause: Throwable?): Exception(message, cause)
+public sealed class EventHandlingException(message: String?, cause: Throwable?) : Exception(message, cause)

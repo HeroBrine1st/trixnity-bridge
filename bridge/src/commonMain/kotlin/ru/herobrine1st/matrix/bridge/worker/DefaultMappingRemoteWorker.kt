@@ -46,8 +46,8 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                         }
                         emit(
                             MappingRemoteWorker.Event.Remote.Room.Create(
-                                roomData = roomData
-                            )
+                                roomData = roomData,
+                            ),
                         )
                     }
 
@@ -62,8 +62,8 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
 
                         emit(
                             MappingRemoteWorker.Event.Remote.Room.Membership(
-                                event.roomId, event.sender, event.stateKey, event.membership
-                            )
+                                event.roomId, event.sender, event.stateKey, event.membership,
+                            ),
                         )
                     }
 
@@ -79,9 +79,9 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                                     eventId = event.eventId,
                                     sender = event.sender,
                                     content = event.content,
-                                    messageId = event.messageId
-                                )
-                            )
+                                    messageId = event.messageId,
+                                ),
+                            ),
                         )
                     }
 
@@ -90,8 +90,8 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                             roomId = event.roomId,
                             sender = event.sender,
                             stateKey = event.stateKey,
-                            membership = event.membership
-                        )
+                            membership = event.membership,
+                        ),
                     )
                 }
             }
@@ -106,8 +106,8 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
             emit(
                 MappingRemoteWorker.Event.Remote.Room.Create(
                     roomData = remoteWorker.getRoom(actorId, event.roomId)
-                        .also { check(it.id == event.roomId) }
-                )
+                        .also { check(it.id == event.roomId) },
+                ),
             )
         }
     }
@@ -120,8 +120,8 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
             logger.debug { "Emitting automatic user $user provision request" }
             emit(
                 MappingRemoteWorker.Event.Remote.User.Create(
-                    userData = remoteWorker.getUser(actorId, user)
-                )
+                    userData = remoteWorker.getUser(actorId, user),
+                ),
             )
         }
     }
@@ -141,16 +141,16 @@ public class DefaultMappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MES
                     roomId = room,
                     sender = null,
                     stateKey = user,
-                    membership = Membership.INVITE
-                )
+                    membership = Membership.INVITE,
+                ),
             )
             emit(
                 MappingRemoteWorker.Event.Remote.Room.Membership(
                     roomId = room,
                     sender = user,
                     stateKey = user,
-                    membership = Membership.JOIN
-                )
+                    membership = Membership.JOIN,
+                ),
             )
         }
     }

@@ -12,7 +12,7 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
         roomId: ROOM,
-        event: ClientEvent.RoomEvent<*>
+        event: ClientEvent.RoomEvent<*>,
     )
 
     // this method intercepts every event, looks if room/user is not known and if so fetches info and passes all data to
@@ -114,7 +114,7 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                 public val userId: USER
 
                 public data class Create<USER : Any>(
-                    val userData: RemoteUser<USER>
+                    val userData: RemoteUser<USER>,
                 ) : User<USER> {
                     override val userId: USER by userData::id
                 }

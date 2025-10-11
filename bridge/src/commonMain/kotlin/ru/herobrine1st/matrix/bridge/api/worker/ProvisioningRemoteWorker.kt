@@ -27,7 +27,7 @@ public interface ProvisioningRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, M
     public suspend fun EventHandlerScope<MESSAGE>.handleEvent(
         actorId: ACTOR,
         roomId: ROOM,
-        event: ClientEvent.RoomEvent<*>
+        event: ClientEvent.RoomEvent<*>,
     )
 
     public fun getEvents(actorId: ACTOR): Flow<Event<USER, ROOM, MESSAGE>>

@@ -10,11 +10,11 @@ import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.
 public class MessageRepositoryImpl<MESSAGE : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<MESSAGE>,
-    internal val stringFormat: StringFormat
+    internal val stringFormat: StringFormat,
 ) : MessageRepository<MESSAGE> {
     override suspend fun createRelation(
         remoteMessageId: MESSAGE,
-        mxEventId: EventId
+        mxEventId: EventId,
     ): Unit = databaseFactory.useDatabase { database ->
         val encoded = stringFormat.encodeToString(serializer, remoteMessageId)
         database.messageQueries.createRelation(mxEventId, encoded)

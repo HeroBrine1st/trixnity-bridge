@@ -9,7 +9,7 @@ import net.folivo.trixnity.core.model.events.StateEventContent
 // Already being used by element https://github.com/element-hq/element-meta/blob/develop/spec/functional_members.md
 @Serializable
 public data class ServiceMembersEventContent(
-    @SerialName("service_members") val serviceMembers: List<UserId>
+    @SerialName("service_members") val serviceMembers: List<UserId>,
 ) : StateEventContent {
     @SerialName("external_url")
     override val externalUrl: String? = null

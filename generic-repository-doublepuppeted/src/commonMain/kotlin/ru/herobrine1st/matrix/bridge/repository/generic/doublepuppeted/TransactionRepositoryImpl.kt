@@ -10,7 +10,7 @@ import ru.herobrine1st.matrix.bridge.repository.TransactionRepository
 import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.DatabaseFactory
 
 public class TransactionRepositoryImpl @PublishedApi internal constructor(
-    internal val databaseFactory: DatabaseFactory
+    internal val databaseFactory: DatabaseFactory,
 ) : TransactionRepository {
     @OptIn(DelicateCoroutinesApi::class)
     private val workaroundForSqldelightFailingToDisableThreadCheckInAsyncEnvironment =
@@ -37,13 +37,13 @@ public class TransactionRepositoryImpl @PublishedApi internal constructor(
     }
 
     override suspend fun getHandledEventsInTransaction(
-        txnId: String
+        txnId: String,
     ): Collection<EventId> = databaseFactory.useDatabase { database ->
         database.transactionQueries.getHandledEventsInTransaction(txnId).awaitAsList()
     }
 
     override suspend fun onEventHandled(txnId: String, eventId: EventId): Unit =
         databaseFactory.useDatabase { database ->
-        database.transactionQueries.onEventHandled(txnId, eventId)
-    }
+            database.transactionQueries.onEventHandled(txnId, eventId)
+        }
 }

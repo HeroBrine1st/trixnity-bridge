@@ -18,7 +18,7 @@ import ru.herobrine1st.matrix.bridge.repository.generic.doublepuppeted.internal.
 public class ActorRepositoryImpl<ACTOR : Any> @PublishedApi internal constructor(
     internal val databaseFactory: DatabaseFactory,
     internal val serializer: KSerializer<ACTOR>,
-    internal val stringFormat: StringFormat
+    internal val stringFormat: StringFormat,
 ) : ActorRepository<ACTOR> {
     override suspend fun getLocalUserIdForActor(remoteActorId: ACTOR): UserId? = null
 

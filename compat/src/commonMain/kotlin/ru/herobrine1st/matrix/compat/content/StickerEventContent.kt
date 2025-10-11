@@ -16,9 +16,10 @@ public data class StickerEventContent(
     @SerialName("url")
     val url: String,
     @SerialName("external_url")
-    override val externalUrl: String?
-): MessageEventContent {
+    override val externalUrl: String?,
+) : MessageEventContent {
     override val mentions: Mentions? = null
+
     @SerialName("m.relates_to")
     override val relatesTo: RelatesTo? = null
 }

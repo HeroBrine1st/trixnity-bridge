@@ -21,8 +21,8 @@ public fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DATA> crea
         MessageRepositoryImpl(databaseFactory, messageIdSerializer, stringFormat),
         PuppetRepositoryImpl(databaseFactory, puppetIdSerializer, stringFormat),
         RoomRepositoryImpl(databaseFactory, actorIdSerializer, roomIdSerializer, stringFormat),
-        TransactionRepositoryImpl(databaseFactory)
+        TransactionRepositoryImpl(databaseFactory),
     ) to RemoteWorkerRepositorySet(
         ActorProvisionRepositoryImpl(databaseFactory, actorIdSerializer, actorDataSerializer, stringFormat),
-        UserMappingRepositoryImpl(databaseFactory, puppetIdSerializer, stringFormat)
+        UserMappingRepositoryImpl(databaseFactory, puppetIdSerializer, stringFormat),
     )

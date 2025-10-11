@@ -65,7 +65,7 @@ public class UserMappingRepositoryImpl<USER : Any>(
         databaseFactory.useDatabase { database ->
             database.userMappingQueries.registerPairFromRemote(
                 stringFormat.encodeToString(idSerializer, remoteId),
-                mxId
+                mxId,
             )
         }
 
@@ -73,7 +73,7 @@ public class UserMappingRepositoryImpl<USER : Any>(
         databaseFactory.useDatabase { database ->
             database.userMappingQueries.registerPairFromMatrix(
                 mxId,
-                stringFormat.encodeToString(idSerializer, remoteId)
+                stringFormat.encodeToString(idSerializer, remoteId),
             )
         }
 }

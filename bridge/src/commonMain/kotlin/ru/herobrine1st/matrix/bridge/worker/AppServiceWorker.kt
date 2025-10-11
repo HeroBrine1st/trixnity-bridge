@@ -65,13 +65,13 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
             DefaultMappingRemoteWorker(
                 client,
                 api,
-                remoteWorkerFactory
+                remoteWorkerFactory,
             )
         },
         idMapperFactory,
         appServiceWorkerRepositorySet,
         bridgeConfig,
-        errorNotifier
+        errorNotifier,
     )
 
     public constructor(
@@ -91,12 +91,12 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                 idMapperFactory,
                 bridgeConfig,
                 api,
-                remoteWorkerFactory
+                remoteWorkerFactory,
             )
         },
         appServiceWorkerRepositorySet,
         bridgeConfig,
-        errorNotifier
+        errorNotifier,
     )
 
 
@@ -113,7 +113,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
     private val blacklist = bridgeConfig.provisioning.blacklist
 
     private val remoteWorker: ProvisioningRemoteWorker<ACTOR, USER, ROOM, MESSAGE> = remoteWorkerFactory.get(
-        RemoteWorkerAPIImpl(messageRepository, puppetRepository, roomRepository)
+        RemoteWorkerAPIImpl(messageRepository, puppetRepository, roomRepository),
     )
 
     // FIXME apparently applicationJob is SupervisorJob
@@ -178,9 +178,9 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                                 event.roomId,
                                 RoomMessageEventContent.TextBased.Notice(
                                     body = "This event is not handled due to error: ${e.message}",
-                                    relatesTo = RelatesTo.Reply(RelatesTo.ReplyTo(event.id))
+                                    relatesTo = RelatesTo.Reply(RelatesTo.ReplyTo(event.id)),
                                 ),
-                                asUserId = appServiceBotId
+                                asUserId = appServiceBotId,
                             ).onFailure {
                                 // Every room must have a bridge bot
                                 logger.error(it) { "An error occurred while notifying users about exception" }
@@ -343,7 +343,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
                     mxRoomId,
                     eventContent = event.content,
                     txnId = event.eventId.value,
-                    asUserId = mxPuppetId
+                    asUserId = mxPuppetId,
                 ).getOrThrow() // SAFETY: User membership is guaranteed to be JOINED by MappingRemoteWorker
 //                    .recover {
 //                    if (it is MatrixServerException && it.errorResponse is ErrorResponse.Forbidden) {
@@ -369,12 +369,12 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
             is ProvisioningRemoteWorker.Event.Remote.Room.Create -> roomRepository.create(
                 actorId,
                 event.mxRoomId,
-                event.roomId
+                event.roomId,
             )
 
             is ProvisioningRemoteWorker.Event.Remote.User.Create -> puppetRepository.createPuppet(
                 event.mxUserId,
-                event.userId
+                event.userId,
             )
         }
     }
@@ -431,7 +431,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
             client.room.sendStateEvent(
                 roomId,
                 powerLevels.copy(users = powerLevels.users + (appServiceBotId to 100L)),
-                asUserId = gateway
+                asUserId = gateway,
             )
                 .getOrThrow()
         }
@@ -449,7 +449,7 @@ public class AppServiceWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any
             logger.debug { "Phase 3: Initialising service members" }
             val serviceMembers = when (initialServiceMembers) {
                 null -> ServiceMembersEventContent(
-                    serviceMembers = listOf(appServiceBotId)
+                    serviceMembers = listOf(appServiceBotId),
                 )
 
                 else -> initialServiceMembers.copy(serviceMembers = initialServiceMembers.serviceMembers + appServiceBotId)

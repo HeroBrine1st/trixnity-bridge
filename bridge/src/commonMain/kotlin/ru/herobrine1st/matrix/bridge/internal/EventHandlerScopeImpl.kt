@@ -6,7 +6,7 @@ import ru.herobrine1st.matrix.bridge.repository.MessageRepository
 
 internal class EventHandlerScopeImpl<MESSAGE : Any>(
     val event: ClientEvent.RoomEvent<*>,
-    private val messageRepository: MessageRepository<MESSAGE>
+    private val messageRepository: MessageRepository<MESSAGE>,
 ) : EventHandlerScope<MESSAGE> {
     override suspend fun linkMessageId(id: MESSAGE) {
         messageRepository.createRelation(id, event.id)

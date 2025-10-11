@@ -12,7 +12,7 @@ public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> @PublishedApi internal 
     internal val databaseFactory: DatabaseFactory,
     internal val actorIdSerializer: KSerializer<ACTOR>,
     internal val roomIdSerializer: KSerializer<ROOM>,
-    internal val stringFormat: StringFormat
+    internal val stringFormat: StringFormat,
 ) : RoomRepository<ACTOR, ROOM> {
     override suspend fun getRemoteRoom(id: RoomId): ROOM? = databaseFactory.useDatabase { database ->
         database.roomQueries.getRemoteIdByRoomId(id).awaitAsOneOrNull()
@@ -32,7 +32,7 @@ public class RoomRepositoryImpl<ACTOR : Any, ROOM : Any> @PublishedApi internal 
         database.roomQueries.create(
             mxId,
             stringFormat.encodeToString(roomIdSerializer, remoteId),
-            stringFormat.encodeToString(actorIdSerializer, actorId)
+            stringFormat.encodeToString(actorIdSerializer, actorId),
         )
     }
 

@@ -34,7 +34,7 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DA
         it.await(null, "CREATE TABLE IF NOT EXISTS metadata(version INTEGER NOT NULL)", 0)
         it.await(null, "INSERT INTO metadata(version) SELECT 0 WHERE NOT EXISTS (SELECT * FROM metadata)", 0)
         val version =
-            it.awaitQuery(null, "SELECT version FROM metadata", mapper = { it.next().await();it.getLong(0)!! }, 0)
+            it.awaitQuery(null, "SELECT version FROM metadata", mapper = { it.next().await(); it.getLong(0)!! }, 0)
         logger.info { "Database version is $version, schema version is ${Database.Schema.version}" }
         if (version == Database.Schema.version) return@use
         it.connection.beginTransaction().awaitCompletion()
@@ -62,7 +62,7 @@ public suspend fun <ACTOR : Any, USER : Any, ROOM : Any, MESSAGE : Any, ACTOR_DA
         roomIdSerializer,
         messageIdSerializer,
         actorDataSerializer,
-        stringFormat
+        stringFormat,
     )
 }
 
@@ -77,5 +77,5 @@ public suspend inline fun <reified ACTOR : Any, reified USER : Any, reified ROOM
         messageIdSerializer = stringFormat.serializersModule.serializer(),
         actorDataSerializer = stringFormat.serializersModule.serializer(),
         stringFormat = stringFormat,
-        connectionFactory = connectionFactory
+        connectionFactory = connectionFactory,
     )
