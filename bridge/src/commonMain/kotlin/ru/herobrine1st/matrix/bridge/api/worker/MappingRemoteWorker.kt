@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import net.folivo.trixnity.core.model.UserId
 import net.folivo.trixnity.core.model.events.ClientEvent
 import ru.herobrine1st.matrix.bridge.api.*
+import net.folivo.trixnity.core.model.events.m.room.Membership as MembershipEnum
 
 // This RemoteWorker supplements ProvisioningRemoteWorker with entities to be provisioned, along with other events
 // mapping - this worker "maps" the remote, like creating a world map
@@ -59,7 +60,7 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                      * The user that is being affected by the event. It is also a sender for JOIN and KNOCK.
                      */
                     val stateKey: USER,
-                    val membership: net.folivo.trixnity.core.model.events.m.room.Membership,
+                    val membership: MembershipEnum,
                     /**
                      * If true and [membership] is INVITE, uses [MSC4171: Service members](https://github.com/matrix-org/matrix-spec-proposals/pull/4171)
                      * on [stateKey].
@@ -67,7 +68,11 @@ public interface MappingRemoteWorker<ACTOR : Any, USER : Any, ROOM : Any, MESSAG
                      * This is relevant to personal bridges handling bridge bypasses
                      */
                     val asServiceMember: Boolean = false,
-                ) : Room<USER, ROOM, Nothing>
+                ) : Room<USER, ROOM, Nothing> {
+                    init {
+                        check((membership == MembershipEnum.JOIN || membership == MembershipEnum.KNOCK) && sender == null)
+                    }
+                }
 
                 public data class Message<USER : Any, ROOM : Any, MESSAGE : Any>(
                     val messageData: RemoteMessageEventData<USER, ROOM, MESSAGE>,
